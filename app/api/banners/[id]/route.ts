@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/firebaseClient';
-import {
-    doc,
-    getDoc,
-    updateDoc,
-    deleteDoc
-} from 'firebase/firestore';
+import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -93,6 +88,7 @@ export async function PATCH(
         return NextResponse.json({ success: true });
     } catch (err: unknown) {
         console.error('Erro ao editar banner:', err);
+        return NextResponse.json({ error: 'Erro ao editar banner' }, { status: 500 });
     }
 }
 
@@ -188,6 +184,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
         return NextResponse.json({ success: true });
     } catch (err: unknown) {
-        console.error('Erro ao editar banner:', err);
+        console.error('Erro ao excluir banner:', err);
+        return NextResponse.json({ error: 'Erro ao excluir banner' }, { status: 500 });
     }
 }
