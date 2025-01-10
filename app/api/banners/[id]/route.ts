@@ -30,6 +30,13 @@ interface FormData {
     } | null;
 }
 
+// Tipo correto para o contexto de parâmetros
+interface Context {
+    params: {
+      id: string;
+    };
+  }
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = params; // Acesso correto ao parâmetro 'id'
@@ -154,10 +161,9 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: Form
     });
 }
 
-export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: Context) {
     try {
-      // Acessando o ID da URL a partir de context.params
-      const { id } = context.params;  
+      const { id } = context.params; // Acessando o id de forma correta do contexto
       if (!id) {
         return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
       }
