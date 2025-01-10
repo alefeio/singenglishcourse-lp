@@ -30,9 +30,11 @@ interface FormData {
     } | null;
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest) {
     try {
-        const { id } = params; // Acesso correto ao parâmetro 'id'
+        const url = req.nextUrl.pathname;
+        const id = url.split('/').pop(); // Extraindo o ID da URL
+
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
