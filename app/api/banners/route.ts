@@ -1,82 +1,68 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebaseClient'
-import { collection, getDocs, addDoc } from 'firebase/firestore'
-import formidable from 'formidable'
-import fs from 'fs'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
 
-// Desativa o bodyParser padrão do Next para lidar com multipart
+import { NextRequest, NextResponse } from 'next/server';
+import formidable from 'formidable';
+import { db } from '@/lib/firebaseClient';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
+import fs from 'fs';
+
+// Desativa o bodyParser
 export const config = {
   api: {
     bodyParser: false,
   },
-}
+};
 
-// Caminho local para salvar as imagens
-const uploadDir = path.join(process.cwd(), 'public', 'banners')
+export async function POST(req: NextRequest) {
+  try {
+    console.log('Iniciando o processamento do formulário...');
 
-// Certifique-se de que a pasta exista
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true })
+    // Use o formidable para lidar com o stream da requisição
+    const form = formidable({
+      uploadDir: './public/uploads',
+      keepExtensions: true,
+    });
+
+    // Usamos diretamente o stream da requisição
+    const [fields, files] = await new Promise<any>((resolve, reject) => {
+      form.parse(req.body, (err, fieldsResult, filesResult) => {
+        if (err) reject(err);
+        else resolve([fieldsResult, filesResult]);
+      });
+    });
+
+    console.log('Campos recebidos:', fields);
+    console.log('Arquivos recebidos:', files);
+
+    const imageUrl = files?.imageFile ? `/uploads/${files.imageFile.newFilename}` : null;
+
+    console.log('Salvando dados no Firestore...');
+    const docRef = await addDoc(collection(db, 'banners'), {
+      title: fields?.title || '',
+      subtitle: fields?.subtitle || '',
+      ctaText: fields?.ctaText || '',
+      ctaColor: fields?.ctaColor || '',
+      ctaLink: fields?.ctaLink || '',
+      imageUrl,
+    });
+
+    console.log('Banner criado com sucesso!');
+    return NextResponse.json({ success: true, id: docRef.id });
+  } catch (error: any) {
+    console.error('Erro ao criar banner:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
 export async function GET() {
   try {
-    const snapshot = await getDocs(collection(db, 'banners'))
+    const snapshot = await getDocs(collection(db, 'banners'));
     const data = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    }))
-    return NextResponse.json(data)
+    }));
+    return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    // 1. Parse do FormData com formidable
-    const form = formidable({
-      multiples: false,
-      uploadDir,
-      keepExtensions: true,
-    })
-
-    const [fields, files] = await new Promise<any>((resolve, reject) => {
-      form.parse(req as any, (err, fieldsResult, filesResult) => {
-        if (err) reject(err)
-        else resolve([fieldsResult, filesResult])
-      })
-    })
-
-    // 2. Se tiver imagem, renomear e mover
-    let imageUrl = ''
-    if (files.imageFile) {
-      const file = files.imageFile
-      const ext = path.extname(file.originalFilename || '').toLowerCase()
-      const newFileName = `${uuidv4()}${ext}`
-      const newFilePath = path.join(uploadDir, newFileName)
-
-      fs.renameSync(file.filepath, newFilePath)
-      // URL local
-      imageUrl = `/banners/${newFileName}`
-    }
-
-    // 3. Salvar dados no Firestore
-    // fields.title, fields.subtitle, etc. vem como strings
-    const docRef = await addDoc(collection(db, 'banners'), {
-      title: fields.title || '',
-      subtitle: fields.subtitle || '',
-      ctaText: fields.ctaText || '',
-      ctaColor: fields.ctaColor || '',
-      ctaLink: fields.ctaLink || '',
-      imageUrl: imageUrl,
-    })
-
-    return NextResponse.json({ success: true, id: docRef.id })
-  } catch (error: any) {
-    console.error('Erro ao criar banner:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Erro ao buscar banners:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

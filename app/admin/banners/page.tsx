@@ -1,140 +1,136 @@
-'use client'
+'use client';
 
-import React, { useState, useEffect, FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface IBanner {
-  id: string
-  title: string
-  subtitle: string
-  ctaText: string
-  ctaColor: string
-  ctaLink: string
-  imageUrl: string
+  id: string;
+  title: string;
+  subtitle: string;
+  ctaText: string;
+  ctaColor: string;
+  ctaLink: string;
+  imageUrl: string;
 }
 
 export default function BannersAdminPage() {
-  const router = useRouter()
+  const router = useRouter();
 
-  const [banners, setBanners] = useState<IBanner[]>([])
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [banners, setBanners] = useState<IBanner[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   // Campos do formulário
-  const [title, setTitle] = useState('')
-  const [subtitle, setSubtitle] = useState('')
-  const [ctaText, setCtaText] = useState('')
-  const [ctaColor, setCtaColor] = useState('#007bff')
-  const [ctaLink, setCtaLink] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [ctaText, setCtaText] = useState('');
+  const [ctaColor, setCtaColor] = useState('#007bff');
+  const [ctaLink, setCtaLink] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   // Mensagens
-  const [error, setError] = useState('')
-  const [message, setMessage] = useState('')
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   // Carregar banners
   useEffect(() => {
-    fetchBanners()
-  }, [])
+    fetchBanners();
+  }, []);
 
   async function fetchBanners() {
     try {
-      const res = await fetch('/api/banners', { method: 'GET' })
-      const data = await res.json()
+      const res = await fetch('/api/banners', { method: 'GET' });
+      if (!res.ok) throw new Error('Erro ao carregar banners');
+      const data = await res.json();
       if (Array.isArray(data)) {
-        setBanners(data)
+        setBanners(data);
       }
     } catch (err) {
-      console.error('Erro ao carregar banners:', err)
+      console.error('Erro ao carregar banners:', err);
     }
   }
 
   // Limpar form
   function resetForm() {
-    setTitle('')
-    setSubtitle('')
-    setCtaText('')
-    setCtaColor('#007bff')
-    setCtaLink('')
-    setImageFile(null)
-    setSelectedId(null)
+    setTitle('');
+    setSubtitle('');
+    setCtaText('');
+    setCtaColor('#007bff');
+    setCtaLink('');
+    setImageFile(null);
+    setSelectedId(null);
   }
 
   // Criar ou Editar
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError('')
-    setMessage('')
+    e.preventDefault();
+    setError('');
+    setMessage('');
 
     if (!title) {
-      setError('Título é obrigatório')
-      return
+      setError('Título é obrigatório');
+      return;
     }
 
     try {
-      const formData = new FormData()
-      formData.append('title', title)
-      formData.append('subtitle', subtitle)
-      formData.append('ctaText', ctaText)
-      formData.append('ctaColor', ctaColor)
-      formData.append('ctaLink', ctaLink)
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('subtitle', subtitle);
+      formData.append('ctaText', ctaText);
+      formData.append('ctaColor', ctaColor);
+      formData.append('ctaLink', ctaLink);
       if (imageFile) {
-        formData.append('imageFile', imageFile)
+        formData.append('imageFile', imageFile);
       }
 
-      let url = '/api/banners'
-      let method = 'POST'
-
-      if (selectedId) {
-        // Edição
-        url = `/api/banners/${selectedId}`
-        method = 'PATCH'
-      }
+      const url = selectedId ? `/api/banners/${selectedId}` : '/api/banners';
+      const method = selectedId ? 'PATCH' : 'POST';
 
       const res = await fetch(url, {
         method,
         body: formData,
-      })
-      const data = await res.json()
+      });
+
+      const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || 'Erro ao salvar banner')
+        throw new Error(data.error || 'Erro ao salvar banner');
       }
 
-      resetForm()
-      setMessage(selectedId ? 'Banner atualizado!' : 'Banner criado!')
-      fetchBanners()
+      resetForm();
+      setMessage(selectedId ? 'Banner atualizado!' : 'Banner criado!');
+      fetchBanners();
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'Erro ao salvar banner');
     }
   }
 
   // Excluir
   async function handleDelete(id: string) {
-    if (!confirm('Deseja realmente excluir este banner?')) return
+    if (!confirm('Deseja realmente excluir este banner?')) return;
     try {
       const res = await fetch(`/api/banners/${id}`, {
         method: 'DELETE',
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Erro ao excluir banner')
+        throw new Error(data.error || 'Erro ao excluir banner');
       }
-      setMessage('Banner excluído!')
-      fetchBanners()
+      setMessage('Banner excluído!');
+      fetchBanners();
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'Erro ao excluir banner');
     }
   }
 
   // Editar (preencher form)
   function startEdit(banner: IBanner) {
-    setSelectedId(banner.id)
-    setTitle(banner.title)
-    setSubtitle(banner.subtitle)
-    setCtaText(banner.ctaText)
-    setCtaColor(banner.ctaColor)
-    setCtaLink(banner.ctaLink)
-    setImageFile(null)  // imagem só se quiser trocar
+    setSelectedId(banner.id);
+    setTitle(banner.title);
+    setSubtitle(banner.subtitle);
+    setCtaText(banner.ctaText);
+    setCtaColor(banner.ctaColor);
+    setCtaLink(banner.ctaLink);
+    setImageFile(null); // Imagem só se quiser trocar
   }
 
   return (
@@ -149,7 +145,7 @@ export default function BannersAdminPage() {
         {error && <p className="text-red-500 mb-2">{error}</p>}
         {message && <p className="text-green-600 mb-2">{message}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" enctype="multipart/form-data">
           <div>
             <label className="block text-sm font-medium mb-1">Título</label>
             <input
@@ -204,7 +200,7 @@ export default function BannersAdminPage() {
               accept="image/*"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
-                  setImageFile(e.target.files[0])
+                  setImageFile(e.target.files[0]);
                 }
               }}
             />
@@ -279,5 +275,5 @@ export default function BannersAdminPage() {
         )}
       </div>
     </div>
-  )
+  );
 }
