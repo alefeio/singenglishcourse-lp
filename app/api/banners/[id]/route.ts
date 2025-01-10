@@ -116,7 +116,8 @@ async function parseFormData(req: NextRequest): Promise<FormData> {
                 parseMultipartFormData(buffer, boundary!, formData);
                 resolve(formData);
             } else {
-                chunks.push(value);
+                // Converte o Uint8Array para Buffer
+                chunks.push(Buffer.from(value));
                 reader?.read().then(processData);
             }
         }).catch(reject);
