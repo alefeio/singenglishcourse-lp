@@ -30,13 +30,6 @@ interface FormData {
     } | null;
 }
 
-// Tipo correto para o contexto de parâmetros
-interface Context {
-    params: {
-      id: string;
-    };
-  }
-
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     try {
         const { id } = params; // Acesso correto ao parâmetro 'id'
@@ -163,35 +156,35 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: Form
 
 export async function DELETE(req: NextRequest) {
     try {
-      const url = req.nextUrl.pathname;
-      const id = url.split('/').pop(); // Extraindo o ID da URL
-  
-      if (!id) {
-        return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
-      }
-  
-      const docRef = doc(db, 'banners', id);
-      const docSnap = await getDoc(docRef);
-  
-      if (!docSnap.exists()) {
-        return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
-      }
-      const data = docSnap.data();
-  
-      // Apagar o banner do Firestore
-      await deleteDoc(docRef);
-  
-      // Se existir o arquivo da imagem, deletar do sistema de arquivos
-      if (data.imageUrl) {
-        const filePath = path.join(process.cwd(), 'public', data.imageUrl);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
+        const url = req.nextUrl.pathname;
+        const id = url.split('/').pop(); // Extraindo o ID da URL
+
+        if (!id) {
+            return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
-      }
-  
-      return NextResponse.json({ success: true });
+
+        const docRef = doc(db, 'banners', id);
+        const docSnap = await getDoc(docRef);
+
+        if (!docSnap.exists()) {
+            return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
+        }
+        const data = docSnap.data();
+
+        // Apagar o banner do Firestore
+        await deleteDoc(docRef);
+
+        // Se existir o arquivo da imagem, deletar do sistema de arquivos
+        if (data.imageUrl) {
+            const filePath = path.join(process.cwd(), 'public', data.imageUrl);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        return NextResponse.json({ success: true });
     } catch (err: unknown) {
-      console.error('Erro ao excluir banner:', err);
-      return NextResponse.json({ error: 'Erro ao excluir banner' }, { status: 500 });
+        console.error('Erro ao excluir banner:', err);
+        return NextResponse.json({ error: 'Erro ao excluir banner' }, { status: 500 });
     }
-  }
+}
