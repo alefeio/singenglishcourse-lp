@@ -154,9 +154,9 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: Form
     });
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
     try {
-        const { id } = params;  // Aguardar a extração do parâmetro
+        const { id } = context.params;  // Extração do parâmetro id de context.params
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
