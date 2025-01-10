@@ -76,7 +76,7 @@ async function parseFormData(req: NextRequest): Promise<FormData> {
 
     const boundary = req.headers.get('content-type')?.split('boundary=')[1];
     if (!boundary) {
-      reject('Não foi possível encontrar o boundary.');
+      reject('Não foi possível encontrar o boundary!');
     }
 
     const reader = req.body?.getReader();
