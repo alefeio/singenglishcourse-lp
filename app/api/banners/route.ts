@@ -11,15 +11,6 @@ export const config = {
   },
 };
 
-// Tipagem para os dados do formulário
-interface FormData {
-  fields: Record<string, string>;
-  imageFile: {
-    filename: string;
-    contentType: string;
-  } | null;
-}
-
 export async function POST(req: NextRequest) {
   try {
     // Lê o corpo da requisição como stream
