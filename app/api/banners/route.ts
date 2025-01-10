@@ -22,29 +22,24 @@ interface FormData {
 
 export async function POST(req: NextRequest) {
   try {
-    console.log('Iniciando o processamento do formulário...');
-
-    // Lê o corpo da requisição como stream (necessário já que bodyParser está desativado)
+    // Lê o corpo da requisição como stream
     const formData = await parseFormData(req);
 
-    // Verifique se o arquivo foi enviado
-    const imageUrl = formData?.imageFile ? `/uploads/${formData.imageFile.filename}` : null;
-
-    console.log('Campos recebidos:', formData.fields);
-    console.log('Arquivo recebido:', formData.imageFile);
+    // Defina a URL da imagem
+    const imageUrl = formData.imageFile
+      ? `/uploads/${formData.imageFile.filename}`
+      : null;
 
     // Salvar dados no Firestore
-    console.log('Salvando dados no Firestore...');
     const docRef = await addDoc(collection(db, 'banners'), {
-      title: formData?.fields.title || '',
-      subtitle: formData?.fields.subtitle || '',
-      ctaText: formData?.fields.ctaText || '',
-      ctaColor: formData?.fields.ctaColor || '',
-      ctaLink: formData?.fields.ctaLink || '',
+      title: formData.fields.title || '',
+      subtitle: formData.fields.subtitle || '',
+      ctaText: formData.fields.ctaText || '',
+      ctaColor: formData.fields.ctaColor || '',
+      ctaLink: formData.fields.ctaLink || '',
       imageUrl,
     });
 
-    console.log('Banner criado com sucesso!');
     return NextResponse.json({ success: true, id: docRef.id });
   } catch (err: unknown) {
     console.error('Erro ao criar banner:', err);
@@ -52,31 +47,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
-  try {
-    const snapshot = await getDocs(collection(db, 'banners'));
-    const data = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    return NextResponse.json(data);
-  } catch (err: unknown) {
-    console.error('Erro ao buscar banners:', err);
-    return NextResponse.json({ error: 'Erro ao buscar banners' }, { status: 500 });
-  }
-}
-
 // Função para lidar com a leitura do formulário e salvar o arquivo
-async function parseFormData(req: NextRequest): Promise<FormData> {
-  return new Promise<FormData>((resolve, reject) => {
-    const formData: FormData = {
+async function parseFormData(req: NextRequest) {
+  return new Promise<any>((resolve, reject) => {
+    const formData: any = {
       fields: {},
       imageFile: null,
     };
 
     const boundary = req.headers.get('content-type')?.split('boundary=')[1];
     if (!boundary) {
-      reject('Não foi possível encontrar o boundary!');
+      reject('Não foi possível encontrar o boundary.');
     }
 
     const reader = req.body?.getReader();
@@ -84,15 +65,14 @@ async function parseFormData(req: NextRequest): Promise<FormData> {
       reject('Não foi possível ler a requisição.');
     }
 
-    const chunks: Buffer[] = [];
+    const chunks: Uint8Array[] = [];
     reader?.read().then(function processData({ done, value }) {
       if (done) {
         const buffer = Buffer.concat(chunks);
         parseMultipartFormData(buffer, boundary!, formData);
         resolve(formData);
       } else {
-        // Converte o Uint8Array para Buffer corretamente
-        chunks.push(Buffer.from(value));
+        chunks.push(value);
         reader?.read().then(processData);
       }
     }).catch(reject);
@@ -100,7 +80,7 @@ async function parseFormData(req: NextRequest): Promise<FormData> {
 }
 
 // Função para analisar o conteúdo do formulário multipart/form-data
-function parseMultipartFormData(buffer: Buffer, boundary: string, formData: FormData) {
+function parseMultipartFormData(buffer: Buffer, boundary: string, formData: any) {
   const bufferStr = buffer.toString('utf-8');
 
   // Divida o conteúdo com base no boundary
@@ -124,11 +104,30 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: Form
           fileStream.write(Buffer.from(content, 'binary'));
           fileStream.end();
 
-          formData.imageFile = { filename: filenameMatch[1], contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream' };
+          formData.imageFile = {
+            filename: filenameMatch[1],
+            filepath: filePath,
+            originalFilename: filenameMatch[1],
+            contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream',
+          };
         } else {
           formData.fields[name] = content;
         }
       }
     }
   });
+}
+
+export async function GET() {
+  try {
+    const snapshot = await getDocs(collection(db, 'banners'));
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    return NextResponse.json(data);
+  } catch (err: unknown) {
+    console.error('Erro ao buscar banners:', err);
+    return NextResponse.json({ error: 'Erro ao buscar banners' }, { status: 500 });
+  }
 }
