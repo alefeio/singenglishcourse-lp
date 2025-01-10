@@ -156,32 +156,34 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: Form
 
 export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
     try {
-        const { id } = context.params;  // Extração do parâmetro id de context.params
-        if (!id) {
-            return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
+      // Acessando o ID da URL a partir de context.params
+      const { id } = context.params;  
+      if (!id) {
+        return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
+      }
+  
+      const docRef = doc(db, 'banners', id);
+      const docSnap = await getDoc(docRef);
+  
+      if (!docSnap.exists()) {
+        return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
+      }
+      const data = docSnap.data();
+  
+      // Apagar do Firestore
+      await deleteDoc(docRef);
+  
+      // Se existir arquivo local, deletar
+      if (data.imageUrl) {
+        const filePath = path.join(process.cwd(), 'public', data.imageUrl);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
         }
-
-        const docRef = doc(db, 'banners', id);
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) {
-            return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
-        }
-        const data = docSnap.data();
-
-        // Apagar do Firestore
-        await deleteDoc(docRef);
-
-        // Se existir arquivo local, deletar
-        if (data.imageUrl) {
-            const filePath = path.join(process.cwd(), 'public', data.imageUrl);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        }
-
-        return NextResponse.json({ success: true });
+      }
+  
+      return NextResponse.json({ success: true });
     } catch (err: unknown) {
-        console.error('Erro ao excluir banner:', err);
-        return NextResponse.json({ error: 'Erro ao excluir banner' }, { status: 500 });
+      console.error('Erro ao excluir banner:', err);
+      return NextResponse.json({ error: 'Erro ao excluir banner' }, { status: 500 });
     }
-}
+  }
