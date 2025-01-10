@@ -1,119 +1,185 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/firebaseClient'
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/firebaseClient';
 import {
   doc,
   getDoc,
   updateDoc,
-  deleteDoc,
-} from 'firebase/firestore'
-import formidable from 'formidable'
-import fs from 'fs'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
+  deleteDoc
+} from 'firebase/firestore';
+import fs from 'fs';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
+// Desativa o bodyParser
 export const config = {
   api: {
-    bodyParser: false,
+    bodyParser: false,  // Desativar o body parser do Next.js
   },
-}
+};
 
-const uploadDir = path.join(process.cwd(), 'public', 'banners')
+const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+
+// Verifica se o diretório de upload existe, se não, cria
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const bannerId = params.id
-    // Buscamos o doc para saber se tem imageUrl antigo
-    const docRef = doc(db, 'banners', bannerId)
-    const docSnap = await getDoc(docRef)
-    if (!docSnap.exists()) {
-      return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 })
+    // Aguardar e extrair corretamente o parâmetro id da URL
+    const { id } = params;
+    if (!id) {
+      return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
     }
 
-    const oldData = docSnap.data()
+    const docRef = doc(db, 'banners', id);
+    const docSnap = await getDoc(docRef);
 
-    // Parse do form
-    const form = formidable({
-      multiples: false,
-      uploadDir,
-      keepExtensions: true,
-    })
+    if (!docSnap.exists()) {
+      return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
+    }
 
-    const [fields, files] = await new Promise<any>((resolve, reject) => {
-      form.parse(req as any, (err, fieldsResult, filesResult) => {
-        if (err) reject(err)
-        else resolve([fieldsResult, filesResult])
-      })
-    })
+    const oldData = docSnap.data();
 
-    let newImageUrl = oldData.imageUrl || ''
+    // Lê o corpo da requisição como um stream
+    const formData = await parseFormData(req);
+
+    let newImageUrl = oldData.imageUrl || '';
 
     // Se subiu nova imagem
-    if (files.imageFile) {
+    if (formData.imageFile) {
       // Apagar imagem antiga (se existir)
       if (oldData.imageUrl) {
-        const oldPath = path.join(process.cwd(), 'public', oldData.imageUrl)
+        const oldPath = path.join(process.cwd(), 'public', oldData.imageUrl);
         if (fs.existsSync(oldPath)) {
-          fs.unlinkSync(oldPath)
+          fs.unlinkSync(oldPath);
         }
       }
 
-      // Salvar nova
-      const file = files.imageFile
-      const ext = path.extname(file.originalFilename || '').toLowerCase()
-      const newFileName = `${uuidv4()}${ext}`
-      const newFilePath = path.join(uploadDir, newFileName)
+      // Salvar nova imagem
+      const file = formData.imageFile;
+      const ext = path.extname(file.originalFilename || '').toLowerCase();
+      const newFileName = `${uuidv4()}${ext}`;
+      const newFilePath = path.join(uploadDir, newFileName);
 
-      fs.renameSync(file.filepath, newFilePath)
-      newImageUrl = `/banners/${newFileName}`
+      // Mover o arquivo para o diretório de uploads
+      fs.renameSync(file.filepath, newFilePath);
+      newImageUrl = `/uploads/${newFileName}`;
     }
 
-    // Atualizar doc
+    // Atualizar dados no Firestore
     await updateDoc(docRef, {
-      title: fields.title ?? oldData.title,
-      subtitle: fields.subtitle ?? oldData.subtitle,
-      ctaText: fields.ctaText ?? oldData.ctaText,
-      ctaColor: fields.ctaColor ?? oldData.ctaColor,
-      ctaLink: fields.ctaLink ?? oldData.ctaLink,
+      title: formData.fields.title ?? oldData.title,
+      subtitle: formData.fields.subtitle ?? oldData.subtitle,
+      ctaText: formData.fields.ctaText ?? oldData.ctaText,
+      ctaColor: formData.fields.ctaColor ?? oldData.ctaColor,
+      ctaLink: formData.fields.ctaLink ?? oldData.ctaLink,
       imageUrl: newImageUrl,
-    })
+    });
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Erro ao editar banner:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('Erro ao editar banner:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const bannerId = params.id
-    const docRef = doc(db, 'banners', bannerId)
-    const docSnap = await getDoc(docRef)
-    if (!docSnap.exists()) {
-      return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 })
+// Função para lidar com a leitura do formulário e salvar o arquivo
+async function parseFormData(req: NextRequest) {
+  return new Promise<any>((resolve, reject) => {
+    const formData: any = {
+      fields: {},
+      imageFile: null,
+    };
+
+    const boundary = req.headers.get('content-type')?.split('boundary=')[1];
+    if (!boundary) {
+      reject('Não foi possível encontrar o boundary.');
     }
-    const data = docSnap.data()
 
-    // Apagar do Firestore
-    await deleteDoc(docRef)
+    const reader = req.body?.getReader();
+    if (!reader) {
+      reject('Não foi possível ler a requisição.');
+    }
 
-    // Se existir arquivo local, deletar
-    if (data.imageUrl) {
-      const filePath = path.join(process.cwd(), 'public', data.imageUrl)
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath)
+    const chunks: Buffer[] = [];
+    reader?.read().then(function processData({ done, value }) {
+      if (done) {
+        const buffer = Buffer.concat(chunks);
+        parseMultipartFormData(buffer, boundary!, formData);
+        resolve(formData);
+      } else {
+        chunks.push(value);
+        reader?.read().then(processData);
+      }
+    }).catch(reject);
+  });
+}
+
+// Função para analisar o conteúdo do formulário multipart/form-data
+function parseMultipartFormData(buffer: Buffer, boundary: string, formData: any) {
+  const bufferStr = buffer.toString('utf-8');
+
+  // Divida o conteúdo com base no boundary
+  const parts = bufferStr.split(`--${boundary}`);
+
+  parts.forEach((part) => {
+    if (part.includes('Content-Disposition')) {
+      const nameMatch = part.match(/name="([^"]+)"/);
+      const filenameMatch = part.match(/filename="([^"]+)"/);
+      const contentTypeMatch = part.match(/Content-Type: ([^;]+)/);
+
+      if (nameMatch) {
+        const name = nameMatch[1];
+        const content = part.split('\r\n\r\n')[1]?.split('\r\n--')[0];
+
+        if (name === 'imageFile' && filenameMatch && content) {
+          formData.imageFile = {
+            filename: filenameMatch[1],
+            filepath: path.join(uploadDir, filenameMatch[1]),
+            originalFilename: filenameMatch[1],
+            contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream',
+          };
+          fs.writeFileSync(formData.imageFile.filepath, Buffer.from(content, 'binary'));
+        } else {
+          formData.fields[name] = content;
+        }
       }
     }
+  });
+}
 
-    return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error('Erro ao excluir banner:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    try {
+        const { id } = params; // Aguardar a extração do parâmetro
+        if (!id) {
+            return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
+        }
+        
+        const docRef = doc(db, 'banners', id);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+            return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
+        }
+        const data = docSnap.data();
+
+        // Apagar do Firestore
+        await deleteDoc(docRef);
+
+        // Se existir arquivo local, deletar
+        if (data.imageUrl) {
+            const filePath = path.join(process.cwd(), 'public', data.imageUrl);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        console.error('Erro ao excluir banner:', error);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
 }
