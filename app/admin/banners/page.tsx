@@ -240,6 +240,7 @@ export default function BannersAdminPage() {
                                         alt="Banner"
                                         width={500}  // Ajuste a largura e a altura de acordo com a sua necessidade
                                         height={300}
+                                        unoptimized={true}
                                     />
                                 )}
 

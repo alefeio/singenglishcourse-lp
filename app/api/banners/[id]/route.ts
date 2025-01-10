@@ -34,7 +34,6 @@ export async function PATCH(req: NextRequest) {
     try {
         const url = req.nextUrl.pathname;
         const id = url.split('/').pop(); // Extraindo o ID da URL
-
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
@@ -116,8 +115,7 @@ async function parseFormData(req: NextRequest): Promise<FormData> {
                 parseMultipartFormData(buffer, boundary!, formData);
                 resolve(formData);
             } else {
-                // Converte o Uint8Array para Buffer
-                chunks.push(Buffer.from(value));
+                chunks.push(value);
                 reader?.read().then(processData);
             }
         }).catch(reject);
@@ -161,23 +159,21 @@ export async function DELETE(req: NextRequest) {
     try {
         const url = req.nextUrl.pathname;
         const id = url.split('/').pop(); // Extraindo o ID da URL
-
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
 
         const docRef = doc(db, 'banners', id);
         const docSnap = await getDoc(docRef);
-
         if (!docSnap.exists()) {
             return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
         }
         const data = docSnap.data();
 
-        // Apagar o banner do Firestore
+        // Apagar do Firestore
         await deleteDoc(docRef);
 
-        // Se existir o arquivo da imagem, deletar do sistema de arquivos
+        // Se existir arquivo local, deletar
         if (data.imageUrl) {
             const filePath = path.join(process.cwd(), 'public', data.imageUrl);
             if (fs.existsSync(filePath)) {
