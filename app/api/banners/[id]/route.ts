@@ -161,9 +161,11 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: Form
     });
 }
 
-export async function DELETE(req: NextRequest, context: Context) {
+export async function DELETE(req: NextRequest) {
     try {
-      const { id } = context.params; // Acessando o id de forma correta do contexto
+      const url = req.nextUrl.pathname;
+      const id = url.split('/').pop(); // Extraindo o ID da URL
+  
       if (!id) {
         return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
       }
@@ -176,10 +178,10 @@ export async function DELETE(req: NextRequest, context: Context) {
       }
       const data = docSnap.data();
   
-      // Apagar do Firestore
+      // Apagar o banner do Firestore
       await deleteDoc(docRef);
   
-      // Se existir arquivo local, deletar
+      // Se existir o arquivo da imagem, deletar do sistema de arquivos
       if (data.imageUrl) {
         const filePath = path.join(process.cwd(), 'public', data.imageUrl);
         if (fs.existsSync(filePath)) {
