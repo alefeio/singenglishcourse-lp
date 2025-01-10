@@ -37,9 +37,8 @@ export async function POST(req: NextRequest) {
 
     console.log('Banner criado com sucesso!');
     return NextResponse.json({ success: true, id: docRef.id });
-  } catch (error: any) {
-    console.error('Erro ao criar banner:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err: unknown) {
+    console.error('Erro ao editar banner:', err);
   }
 }
 
@@ -51,16 +50,15 @@ export async function GET() {
       ...doc.data(),
     }));
     return NextResponse.json(data);
-  } catch (error: any) {
-    console.error('Erro ao buscar banners:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (err: unknown) {
+    console.error('Erro ao editar banner:', err);
   }
 }
 
 // Função para lidar com a leitura do formulário e salvar o arquivo
 async function parseFormData(req: NextRequest) {
   return new Promise<any>((resolve, reject) => {
-    const formData: any = {
+    const formData: { fields: Object, imageFile: string | null } = {
       fields: {},
       imageFile: null,
     };
@@ -90,7 +88,7 @@ async function parseFormData(req: NextRequest) {
 }
 
 // Função para analisar o conteúdo do formulário multipart/form-data
-function parseMultipartFormData(buffer: Buffer, boundary: string, formData: any) {
+function parseMultipartFormData(buffer: Buffer, boundary: string, formData: { imageFile: { filename: string, contentType: string }, fields: {[key:string]:string} }) {
   const bufferStr = buffer.toString('utf-8');
 
   // Divida o conteúdo com base no boundary

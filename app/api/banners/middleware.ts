@@ -6,7 +6,7 @@ export async function middleware(req: Request) {
   const form = new formidable.IncomingForm({
     uploadDir: './public/uploads', // Defina o diretório de upload
     keepExtensions: true, // Manter a extensão do arquivo
-    filename: (name, ext, part, form) => part.originalFilename, // Usar o nome original do arquivo
+    filename: (name, ext, part) => part.originalFilename, // Usar o nome original do arquivo
   });
 
   return new Promise((resolve, reject) => {

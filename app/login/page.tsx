@@ -23,9 +23,9 @@ export default function LoginPage() {
 
       // Redirecionar, por exemplo, para /dashboard
       router.push('/admin')
-    } catch (err: any) {
-      console.error('Erro ao fazer login:', err)
-      setError(err.message || 'Email ou senha inválidos')
+    } catch (err: unknown) {
+        console.error(err);
+      setError('Email ou senha inválidos')
     } finally {
       setLoading(false)
     }
