@@ -24,13 +24,23 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+// Tipos para os dados do formulário
+interface FormData {
+  fields: { [key: string]: string };
+  imageFile: {
+    filename: string;
+    filepath: string;
+    originalFilename: string;
+    contentType: string;
+  } | null;
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // Aguardar e extrair corretamente o parâmetro id da URL
-    const { id } = params;
+    const { id } = params;  // Extraindo o id da URL
     if (!id) {
       return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
     }
@@ -45,7 +55,7 @@ export async function PATCH(
     const oldData = docSnap.data();
 
     // Lê o corpo da requisição como um stream
-    const formData = await parseFormData(req);
+    const formData: FormData = await parseFormData(req);
 
     let newImageUrl = oldData.imageUrl || '';
 
@@ -88,9 +98,9 @@ export async function PATCH(
 }
 
 // Função para lidar com a leitura do formulário e salvar o arquivo
-async function parseFormData(req: NextRequest) {
-  return new Promise<any>((resolve, reject) => {
-    const formData: any = {
+async function parseFormData(req: NextRequest): Promise<FormData> {
+  return new Promise<FormData>((resolve, reject) => {
+    const formData: FormData = {
       fields: {},
       imageFile: null,
     };
@@ -120,7 +130,7 @@ async function parseFormData(req: NextRequest) {
 }
 
 // Função para analisar o conteúdo do formulário multipart/form-data
-function parseMultipartFormData(buffer: Buffer, boundary: string, formData: any) {
+function parseMultipartFormData(buffer: Buffer, boundary: string, formData: FormData) {
   const bufferStr = buffer.toString('utf-8');
 
   // Divida o conteúdo com base no boundary
@@ -154,7 +164,7 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: any)
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        const { id } = params; // Aguardar a extração do parâmetro
+        const { id } = params;  // Aguardar a extração do parâmetro
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }

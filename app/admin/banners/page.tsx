@@ -1,7 +1,7 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useState, useEffect, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 
 interface IBanner {
   id: string;
@@ -14,8 +14,6 @@ interface IBanner {
 }
 
 export default function BannersAdminPage() {
-  const router = useRouter();
-
   const [banners, setBanners] = useState<IBanner[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -235,11 +233,12 @@ export default function BannersAdminPage() {
               <div key={banner.id} className="border p-3 rounded">
                 {/* Exibir imagem (caso exista) */}
                 {banner.imageUrl && (
-                  <img
+                  <Image
                     src={banner.imageUrl}
                     alt="Banner"
-                    className="mb-2 w-full h-40 object-cover rounded"
-                  />
+                    width={500}  // Ajuste a largura e a altura de acordo com a sua necessidade
+                    height={300}
+                    />
                 )}
 
                 <h3 className="text-lg font-bold mb-1">{banner.title}</h3>
