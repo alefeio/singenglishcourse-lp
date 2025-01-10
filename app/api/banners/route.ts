@@ -11,6 +11,15 @@ export const config = {
   },
 };
 
+// Tipagem para os dados do formulário
+interface FormData {
+  fields: Record<string, string>;
+  imageFile: {
+    filename: string;
+    contentType: string;
+  } | null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Lê o corpo da requisição como stream
@@ -40,8 +49,8 @@ export async function POST(req: NextRequest) {
 
 // Função para lidar com a leitura do formulário e salvar o arquivo
 async function parseFormData(req: NextRequest) {
-  return new Promise<any>((resolve, reject) => {
-    const formData: any = {
+  return new Promise<FormData>((resolve, reject) => {
+    const formData: FormData = {
       fields: {},
       imageFile: null,
     };
@@ -71,7 +80,7 @@ async function parseFormData(req: NextRequest) {
 }
 
 // Função para analisar o conteúdo do formulário multipart/form-data
-function parseMultipartFormData(buffer: Buffer, boundary: string, formData: any) {
+function parseMultipartFormData(buffer: Buffer, boundary: string, formData: FormData) {
   const bufferStr = buffer.toString('utf-8');
 
   // Divida o conteúdo com base no boundary
