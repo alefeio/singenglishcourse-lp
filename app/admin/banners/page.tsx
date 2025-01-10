@@ -145,7 +145,7 @@ export default function BannersAdminPage() {
                 {error && <p className="text-red-500 mb-2">{error}</p>}
                 {message && <p className="text-green-600 mb-2">{message}</p>}
 
-                <form onSubmit={handleSubmit} className="space-y-4" enctype="multipart/form-data">
+                <form onSubmit={handleSubmit} className="space-y-4" encType="multipart/form-data">
                     <div>
                         <label className="block text-sm font-medium mb-1">Título</label>
                         <input

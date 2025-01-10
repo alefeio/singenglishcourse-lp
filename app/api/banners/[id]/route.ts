@@ -30,11 +30,9 @@ interface FormData {
     } | null;
 }
 
-export async function PATCH(
-    req: NextRequest
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        const { id } = req.nextUrl.searchParams;  // Extraindo o id da URL
+        const { id } = params; // Extraindo o id da URL
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
@@ -156,9 +154,9 @@ function parseMultipartFormData(buffer: Buffer, boundary: string, formData: Form
     });
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        const { id } = req.nextUrl.searchParams;  // Aguardar a extração do parâmetro
+        const { id } = params;  // Aguardar a extração do parâmetro
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
