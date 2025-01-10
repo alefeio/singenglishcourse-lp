@@ -32,7 +32,7 @@ interface FormData {
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        const { id } = params; // Extraindo o id da URL
+        const { id } = params; // Acesso correto ao parâmetro 'id'
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
