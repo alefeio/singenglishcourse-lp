@@ -1,10 +1,12 @@
 'use client'
 
+import Carousel from '@/components/Carousel'
 import Image from 'next/image'
 
 export default function LandingPage() {
   return (
     <main className="flex flex-col">
+      <Carousel />
 
       {/* Sessão 1 */}
       <section

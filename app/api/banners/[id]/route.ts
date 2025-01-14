@@ -4,6 +4,7 @@ import { doc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { parseFormData } from '@/app/utils/parseFormData';
 
 // Desativa o bodyParser
 export const config = {
@@ -19,140 +20,86 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Tipos para os dados do formulário
-interface FormData {
-    fields: { [key: string]: string };
-    imageFile: {
-        filename: string;
-        filepath: string;
-        originalFilename: string;
-        contentType: string;
-    } | null;
-}
-
 export async function PATCH(req: NextRequest) {
     try {
+        console.log('Iniciando atualização do banner...');
+
+        // Obtém o ID do banner da URL
         const url = req.nextUrl.pathname;
-        const id = url.split('/').pop(); // Extraindo o ID da URL
+        const id = url.split('/').pop();
         if (!id) {
             return NextResponse.json({ error: 'ID do banner não fornecido' }, { status: 400 });
         }
 
+        // Recupera o banner atual do Firestore
         const docRef = doc(db, 'banners', id);
         const docSnap = await getDoc(docRef);
-
         if (!docSnap.exists()) {
             return NextResponse.json({ error: 'Banner não encontrado' }, { status: 404 });
         }
-
         const oldData = docSnap.data();
+        console.log('Dados antigos do banner:', oldData);
 
-        // Lê o corpo da requisição como um stream
-        const formData: FormData = await parseFormData(req);
+        // Lê os dados da requisição
+        const formData = await parseFormData(req);
+
+        console.log('Dados recebidos do formulário:', formData);
 
         let newImageUrl = oldData.imageUrl || '';
 
-        // Se subiu nova imagem
+        // Se uma nova imagem foi enviada, processa o arquivo
         if (formData.imageFile) {
-            // Apagar imagem antiga (se existir)
+            console.log('Nova imagem recebida, processando...');
+
+            // Remove a imagem antiga, se existir
             if (oldData.imageUrl) {
-                const oldPath = path.join(process.cwd(), 'public', oldData.imageUrl);
-                if (fs.existsSync(oldPath)) {
-                    fs.unlinkSync(oldPath);
+                const oldImagePath = path.join(process.cwd(), 'public', oldData.imageUrl);
+                console.log(`Tentando remover imagem antiga em: ${oldImagePath}`);
+                if (fs.existsSync(oldImagePath)) {
+                    fs.unlinkSync(oldImagePath);
+                    console.log(`Imagem antiga removida: ${oldImagePath}`);
+                } else {
+                    console.warn(`Imagem antiga não encontrada: ${oldImagePath}`);
                 }
             }
 
-            // Salvar nova imagem
+            // Gera o novo nome do arquivo com UUID e extensão correta
             const file = formData.imageFile;
-            const ext = path.extname(file.originalFilename || '').toLowerCase();
+            const ext = path.extname(file.filename).toLowerCase();
             const newFileName = `${uuidv4()}${ext}`;
-            const newFilePath = path.join(uploadDir, newFileName);
+            const newFilePath = path.join(process.cwd(), 'public', 'uploads', newFileName);
 
-            // Mover o arquivo para o diretório de uploads
-            fs.renameSync(file.filepath, newFilePath);
-            newImageUrl = `/uploads/${newFileName}`;
+            console.log('Novo nome do arquivo:', newFileName);
+            console.log('Novo caminho do arquivo:', newFilePath);
+
+            // Garantir que o conteúdo da imagem seja um buffer
+            const fileContent = Buffer.from(file.content, 'binary'); // Transformar o conteúdo em um buffer
+            if (!Buffer.isBuffer(fileContent)) {
+                console.error('O conteúdo do arquivo não é um buffer!');
+                return NextResponse.json({ error: 'Conteúdo da imagem inválido' }, { status: 400 });
+            }
+
+            fs.writeFileSync(newFilePath, fileContent); // Salva o arquivo binário diretamente
+            newImageUrl = `/uploads/${newFileName}`; // Define a URL da nova imagem
+            console.log(`Nova imagem salva: ${newFilePath}`);
         }
 
-        // Atualizar dados no Firestore
+        // Atualiza os dados no Firestore
         await updateDoc(docRef, {
-            title: formData.fields.title ?? oldData.title,
-            subtitle: formData.fields.subtitle ?? oldData.subtitle,
-            ctaText: formData.fields.ctaText ?? oldData.ctaText,
-            ctaColor: formData.fields.ctaColor ?? oldData.ctaColor,
-            ctaLink: formData.fields.ctaLink ?? oldData.ctaLink,
-            imageUrl: newImageUrl,
+            title: formData?.fields.title ?? oldData.title,
+            subtitle: formData?.fields.subtitle ?? oldData.subtitle,
+            ctaText: formData?.fields.ctaText ?? oldData.ctaText,
+            ctaColor: formData?.fields.ctaColor ?? oldData.ctaColor,
+            ctaLink: formData?.fields.ctaLink ?? oldData.ctaLink,
+            imageUrl: newImageUrl, // Salva o nome com UUID no Firestore
         });
 
+        console.log('Banner atualizado com sucesso!');
         return NextResponse.json({ success: true });
     } catch (err: unknown) {
-        console.error('Erro ao editar banner:', err);
-        return NextResponse.json({ error: 'Erro ao editar banner' }, { status: 500 });
+        console.error('Erro ao atualizar banner:', err);
+        return NextResponse.json({ error: 'Erro ao atualizar banner' }, { status: 500 });
     }
-}
-
-// Função para lidar com a leitura do formulário e salvar o arquivo
-async function parseFormData(req: NextRequest): Promise<FormData> {
-    return new Promise<FormData>((resolve, reject) => {
-        const formData: FormData = {
-            fields: {},
-            imageFile: null,
-        };
-
-        const boundary = req.headers.get('content-type')?.split('boundary=')[1];
-        if (!boundary) {
-            reject('Não foi possível encontrar o boundary.');
-        }
-
-        const reader = req.body?.getReader();
-        if (!reader) {
-            reject('Não foi possível ler a requisição.');
-        }
-
-        const chunks: Buffer[] = [];
-        reader?.read().then(function processData({ done, value }) {
-            if (done) {
-                const buffer = Buffer.concat(chunks);
-                parseMultipartFormData(buffer, boundary!, formData);
-                resolve(formData);
-            } else {
-                chunks.push(value);
-                reader?.read().then(processData);
-            }
-        }).catch(reject);
-    });
-}
-
-// Função para analisar o conteúdo do formulário multipart/form-data
-function parseMultipartFormData(buffer: Buffer, boundary: string, formData: FormData) {
-    const bufferStr = buffer.toString('utf-8');
-
-    // Divida o conteúdo com base no boundary
-    const parts = bufferStr.split(`--${boundary}`);
-
-    parts.forEach((part) => {
-        if (part.includes('Content-Disposition')) {
-            const nameMatch = part.match(/name="([^"]+)"/);
-            const filenameMatch = part.match(/filename="([^"]+)"/);
-            const contentTypeMatch = part.match(/Content-Type: ([^;]+)/);
-
-            if (nameMatch) {
-                const name = nameMatch[1];
-                const content = part.split('\r\n\r\n')[1]?.split('\r\n--')[0];
-
-                if (name === 'imageFile' && filenameMatch && content) {
-                    formData.imageFile = {
-                        filename: filenameMatch[1],
-                        filepath: path.join(uploadDir, filenameMatch[1]),
-                        originalFilename: filenameMatch[1],
-                        contentType: contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream',
-                    };
-                    fs.writeFileSync(formData.imageFile.filepath, Buffer.from(content, 'binary'));
-                } else {
-                    formData.fields[name] = content;
-                }
-            }
-        }
-    });
 }
 
 export async function DELETE(req: NextRequest) {

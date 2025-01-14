@@ -197,6 +197,7 @@ export default function BannersAdminPage() {
                         </label>
                         <input
                             type="file"
+                            name="imageFile"
                             accept="image/*"
                             onChange={(e) => {
                                 if (e.target.files && e.target.files[0]) {

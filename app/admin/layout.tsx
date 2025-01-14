@@ -62,6 +62,12 @@ export default function AdminLayout({
               >
                 Banners
               </Link>
+              <Link
+                href="/admin/lp"
+                className="block px-2 py-2 rounded hover:bg-gray-200"
+              >
+                Landing Page
+              </Link>
             </nav>
           </aside>
 
