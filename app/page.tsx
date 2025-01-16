@@ -15,7 +15,7 @@ export default function LandingPage() {
       >
         {/* Imagem de fundo (exemplo) */}
         <Image
-          src="/images/sessao1.jpg"       // AJUSTE para o nome real do arquivo
+          src="/images/sessao1.png"       // AJUSTE para o nome real do arquivo
           alt="Sessão 1"
           fill
           className="object-cover object-center"
@@ -37,7 +37,7 @@ export default function LandingPage() {
         className="relative w-full h-screen flex items-center justify-center bg-gray-100"
       >
         <Image
-          src="/images/sessao2.jpg"       // AJUSTE para o nome real do arquivo
+          src="/images/sessao2.png"       // AJUSTE para o nome real do arquivo
           alt="Sessão 2"
           fill
           className="object-cover object-center"
@@ -57,7 +57,7 @@ export default function LandingPage() {
         className="relative w-full h-screen flex items-center justify-center bg-gray-100"
       >
         <Image
-          src="/images/sessao3.jpg"       // AJUSTE para o nome real do arquivo
+          src="/images/sessao3.png"       // AJUSTE para o nome real do arquivo
           alt="Sessão 3"
           fill
           className="object-cover object-center"
@@ -77,7 +77,7 @@ export default function LandingPage() {
         className="relative w-full h-screen flex items-center justify-center bg-gray-100"
       >
         <Image
-          src="/images/sessao4.jpg"       // AJUSTE para o nome real do arquivo
+          src="/images/sessao4.png"       // AJUSTE para o nome real do arquivo
           alt="Sessão 4"
           fill
           className="object-cover object-center"

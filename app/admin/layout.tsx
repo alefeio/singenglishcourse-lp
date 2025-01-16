@@ -18,8 +18,7 @@ export default function AdminLayout({
   }
 
   return (
-    <html lang="pt-BR">
-      <body className="bg-gray-100">
+      <div className="bg-gray-100">
         {/* Header */}
         <header className="bg-white shadow p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -73,7 +72,6 @@ export default function AdminLayout({
 
           <main className="flex-1 p-4">{children}</main>
         </div>
-      </body>
-    </html>
+      </div>
   )
 }

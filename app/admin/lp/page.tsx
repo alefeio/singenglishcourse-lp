@@ -1,302 +1,138 @@
 'use client';
-
-import React, { useState, useEffect } from 'react';
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import React, { useState } from 'react';
+import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
-const COMPONENT_TYPES = {
-    DIV: 'div',
-    TEXT: 'text',
-    IMAGE: 'image',
-    TWO_DIVS: 'twoDivs',
-    THREE_DIVS: 'threeDivs',
-    FOUR_DIVS: 'fourDivs',
-};
+import { COMPONENT_TYPES, IComponent } from '@/components/DragAndDrop/types';
+import DraggableComponent from '@/components/DraggableComponent';
+import DroppableArea from '@/components/DroppableArea';
+import RenderComponent from '@/components/RenderComponent';
 
-const DraggableComponent = ({ type, children, generateChildren }) => {
-    const [, drag] = useDrag(() => ({
-        type,
-        item: { type, generateChildren },
-    }));
+const generateId = () => Math.random().toString(36).substring(2, 9);
 
-    return (
-        <div
-            ref={drag}
-            style={{
-                padding: '10px',
-                border: '1px solid #ccc',
-                marginBottom: '10px',
-                cursor: 'grab',
-            }}
-        >
-            {children}
-        </div>
-    );
-};
+const LandingPageBuilder: React.FC = () => {
+  const [components, setComponents] = useState<IComponent[]>([]);
 
-const DroppableArea = ({ parentId, onDrop, children, isMainArea }) => {
-    const [, drop] = useDrop(() => ({
-        accept: Object.values(COMPONENT_TYPES),
-        drop: (item) => {
-            console.log('Drop detected:', { type: item.type, parentId });
-            const extraChildren = item.generateChildren ? item.generateChildren() : null;
-            onDrop(item.type, parentId, extraChildren);
-        },
-    }));
-
-    return (
-        <div
-            ref={drop}
-            style={{
-                minHeight: isMainArea ? '400px' : '100px',
-                padding: '20px',
-                border: isMainArea ? '2px dashed #ccc' : '1px solid #ccc',
-                backgroundColor: isMainArea ? '#f4f4f4' : '#fff',
-                marginBottom: '10px',
-                display: 'flex',
-                gap: '10px',
-                flexWrap: 'wrap',
-            }}
-        >
-            {children}
-        </div>
-    );
-};
-
-const RenderComponent = ({ component, onDrop, updateComponent }) => {
-    const handleContentChange = (e) => {
-        updateComponent(component.id, { ...component, content: e.target.value });
+  const handleDrop = (
+    type: COMPONENT_TYPES,
+    parentId: string | null = null,
+    parentSubId: string | null = null,
+    extraChildren: IComponent | null = null
+  ) => {
+    const newComponent: IComponent = {
+      id: generateId(),
+      type,
+      content: '',
+      parentSubId,
+      children: null,
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                updateComponent(component.id, { ...component, content: reader.result });
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-
-    if (component.type === COMPONENT_TYPES.DIV) {
-        return (
-            <DroppableArea parentId={component.id} onDrop={onDrop}>
-                {component.children.map((child) => (
-                    <RenderComponent
-                        key={child.id}
-                        component={child}
-                        onDrop={onDrop}
-                        updateComponent={updateComponent}
-                    />
-                ))}
-            </DroppableArea>
-        );
+    // Se for imagem, define tamanho inicial
+    if (type === COMPONENT_TYPES.IMAGE) {
+      newComponent.width = 300;
+      newComponent.height = 0; // 'auto'
     }
 
-    if (
-        component.type === COMPONENT_TYPES.TWO_DIVS ||
-        component.type === COMPONENT_TYPES.THREE_DIVS ||
-        component.type === COMPONENT_TYPES.FOUR_DIVS
-    ) {
-        const numberOfDivs =
-            component.type === COMPONENT_TYPES.TWO_DIVS
-                ? 2
-                : component.type === COMPONENT_TYPES.THREE_DIVS
-                ? 3
-                : 4;
-
-        return (
-            <div
-                style={{
-                    display: 'flex',
-                    gap: '10px',
-                    border: '1px solid #ddd',
-                    padding: '10px',
-                    marginBottom: '10px',
-                }}
-            >
-                {Array.from({ length: numberOfDivs }).map((_, index) => {
-                    const subId = `${component.id}-div${index}`;
-                    return (
-                        <DroppableArea
-                            key={index}
-                            parentId={subId}
-                            onDrop={onDrop}
-                        >
-                            {(component.children || [])
-                                .filter((child) => child.parentSubId === subId)
-                                .map((child) => (
-                                    <RenderComponent
-                                        key={child.id}
-                                        component={child}
-                                        onDrop={onDrop}
-                                        updateComponent={updateComponent}
-                                    />
-                                ))}
-                        </DroppableArea>
-                    );
-                })}
-            </div>
-        );
+    // Se vier sub-children (caso você use "twoDivs", etc.)
+    if (extraChildren?.children) {
+      newComponent.children = extraChildren.children;
     }
 
-    if (component.type === COMPONENT_TYPES.TEXT) {
-        return (
-            <textarea
-                value={component.content || ''}
-                onChange={handleContentChange}
-                style={{ width: '100%', height: '80px', marginBottom: '10px', padding: '5px' }}
-            />
-        );
+    // Se não houver parentId, é top-level
+    if (!parentId) {
+      setComponents((prev) => [...prev, newComponent]);
+      return;
     }
 
-    if (component.type === COMPONENT_TYPES.IMAGE) {
-        return (
-            <div style={{ marginBottom: '10px' }}>
-                <input type="file" onChange={handleImageChange} />
-                {component.content && (
-                    <img
-                        src={component.content}
-                        alt="Uploaded"
-                        style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '4px' }}
-                    />
-                )}
-            </div>
-        );
-    }
-
-    return null;
-};
-
-const LandingPageBuilder = () => {
-    const [components, setComponents] = useState([]);
-
-    useEffect(() => {
-        console.log('Components state updated:', components);
-    }, [components]);
-
-    const generateId = () => Math.random().toString(36).substr(2, 9);
-
-    const generateDivGroup = (count, type) => {
-        return {
-            id: generateId(),
-            type,
-            content: '',
-            children: Array.from({ length: count }, () => ({
-                id: generateId(),
-                type: COMPONENT_TYPES.DIV,
-                content: '',
-                children: [],
-                parentSubId: null, // Initially no subId
-            })),
-        };
-    };
-
-    const handleDrop = (type, parentId = null, parentSubId = null) => {
-        const newComponent = {
-            id: generateId(),
-            type,
-            content: '',
-            parentSubId,
-            children: type === COMPONENT_TYPES.DIV ? [] : null,
-        };
-
-        setComponents((prevComponents) => {
-            const updateRecursively = (components) =>
-                components.map((component) => {
-                    if (component.id === parentId) {
-                        if (parentSubId) {
-                            return {
-                                ...component,
-                                children: [
-                                    ...(component.children || []),
-                                    { ...newComponent, parentSubId },
-                                ],
-                            };
-                        }
-                        return {
-                            ...component,
-                            children: [...(component.children || []), newComponent],
-                        };
-                    }
-
-                    if (component.children) {
-                        return {
-                            ...component,
-                            children: updateRecursively(component.children),
-                        };
-                    }
-
-                    return component;
-                });
-
-            if (!parentId) {
-                return [...prevComponents, newComponent];
+    // Caso contrário, insere recursivamente
+    setComponents((prev) => {
+      const updateRecursively = (list: IComponent[]): IComponent[] =>
+        list.map((comp) => {
+          if (comp.id === parentId) {
+            if (parentSubId) {
+              return {
+                ...comp,
+                children: [
+                  ...(comp.children || []),
+                  { ...newComponent, parentSubId },
+                ],
+              };
             }
-
-            return updateRecursively(prevComponents);
+            return {
+              ...comp,
+              children: [...(comp.children || []), newComponent],
+            };
+          }
+          if (comp.children) {
+            return {
+              ...comp,
+              children: updateRecursively(comp.children),
+            };
+          }
+          return comp;
         });
-    };
 
-    const updateComponent = (id, updatedComponent) => {
-        const updateRecursively = (components) =>
-            components.map((component) =>
-                component.id === id
-                    ? updatedComponent
-                    : {
-                        ...component,
-                        children: component.children
-                            ? updateRecursively(component.children)
-                            : [],
-                    }
-            );
+      return updateRecursively(prev);
+    });
+  };
 
-        setComponents((prevComponents) => updateRecursively(prevComponents));
-    };
+  // Atualiza texto, imagem, etc.
+  const updateComponent = (id: string, updatedComp: IComponent) => {
+    const updateRecursively = (list: IComponent[]): IComponent[] =>
+      list.map((comp) => {
+        if (comp.id === id) return updatedComp;
+        if (comp.children) {
+          return { ...comp, children: updateRecursively(comp.children) };
+        }
+        return comp;
+      });
+    setComponents((prev) => updateRecursively(prev));
+  };
 
-    return (
-        <DndProvider backend={HTML5Backend}>
-            <div style={{ display: 'flex', gap: '20px' }}>
-                <div style={{ flex: 1 }}>
-                    <h3>Componentes</h3>
-                    <DraggableComponent type={COMPONENT_TYPES.DIV}>Div</DraggableComponent>
-                    <DraggableComponent type={COMPONENT_TYPES.TEXT}>Texto</DraggableComponent>
-                    <DraggableComponent type={COMPONENT_TYPES.IMAGE}>Imagem</DraggableComponent>
-                    <DraggableComponent
-                        type={COMPONENT_TYPES.TWO_DIVS}
-                        generateChildren={() => generateDivGroup(2, COMPONENT_TYPES.TWO_DIVS)}
-                    >
-                        Duas Divs
-                    </DraggableComponent>
-                    <DraggableComponent
-                        type={COMPONENT_TYPES.THREE_DIVS}
-                        generateChildren={() => generateDivGroup(3, COMPONENT_TYPES.THREE_DIVS)}
-                    >
-                        Três Divs
-                    </DraggableComponent>
-                    <DraggableComponent
-                        type={COMPONENT_TYPES.FOUR_DIVS}
-                        generateChildren={() => generateDivGroup(4, COMPONENT_TYPES.FOUR_DIVS)}
-                    >
-                        Quatro Divs
-                    </DraggableComponent>
-                </div>
-                <div style={{ flex: 3 }}>
-                    <h3>Área de Construção</h3>
-                    {components.map((component) => (
-                        <RenderComponent
-                            key={component.id}
-                            component={component}
-                            onDrop={handleDrop}
-                            updateComponent={updateComponent}
-                        />
-                    ))}
-                    <DroppableArea onDrop={handleDrop} isMainArea />
-                </div>
-            </div>
-        </DndProvider>
-    );
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="flex gap-5">
+        {/* Lateral */}
+        <div className="flex-1">
+          <h3 className="text-xl font-bold mb-3">Componentes</h3>
+
+          {/* Div em Linha */}
+          <DraggableComponent type={COMPONENT_TYPES.DIV_INLINE}>
+            Div (Em Linha)
+          </DraggableComponent>
+
+          {/* Div em Linha Única */}
+          <DraggableComponent type={COMPONENT_TYPES.DIV_FULL}>
+            Div (Linha Única)
+          </DraggableComponent>
+
+          <DraggableComponent type={COMPONENT_TYPES.TEXT}>
+            Texto
+          </DraggableComponent>
+
+          <DraggableComponent type={COMPONENT_TYPES.IMAGE}>
+            Imagem
+          </DraggableComponent>
+        </div>
+
+        {/* Área principal */}
+        <div style={{width: '1280px'}}>
+          <h3 className="text-xl font-bold mb-3">Área de Construção</h3>
+
+          <DroppableArea onDrop={handleDrop} isMainArea>
+            {components.map((comp) => (
+              <RenderComponent
+                key={comp.id}
+                component={comp}
+                onDrop={handleDrop}
+                updateComponent={updateComponent}
+              />
+            ))}
+          </DroppableArea>
+        </div>
+      </div>
+    </DndProvider>
+  );
 };
 
 export default LandingPageBuilder;
