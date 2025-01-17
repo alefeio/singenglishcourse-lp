@@ -19,7 +19,7 @@ export default function RootLayout({
       <body className="font-sans text-gray-800">
         {/* Header / Navbar */}
         <header className="bg-white shadow-md">
-          <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-2">
               <Image

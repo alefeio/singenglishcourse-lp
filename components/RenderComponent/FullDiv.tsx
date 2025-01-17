@@ -1,11 +1,9 @@
-// RenderComponent/FullDiv.tsx
-
+// FullDiv.tsx
 'use client';
 import React from 'react';
 import DroppableArea from '@/components/DroppableArea';
 import RenderComponent from '@/components/RenderComponent/RenderComponent';
 import ColorPickerButton from './ColorPickerButton';
-
 import { IComponent } from '@/components/DragAndDrop/types';
 
 interface FullDivProps {
@@ -21,7 +19,11 @@ const FullDiv: React.FC<FullDivProps> = ({
   updateComponent,
   deleteComponent,
 }) => {
-  const style: React.CSSProperties = {
+  const handleUpdate = (props: Partial<IComponent>) => {
+    updateComponent(component.id, { ...component, ...props });
+  };
+
+  const containerStyle: React.CSSProperties = {
     backgroundColor: component.backgroundColor || 'transparent',
     margin: component.margin ?? 0,
     padding: component.padding ?? 0,
@@ -29,16 +31,25 @@ const FullDiv: React.FC<FullDivProps> = ({
     borderStyle: 'solid',
     borderWidth: component.borderWidth ?? 1,
     borderColor: component.borderColor ?? 'rgba(204,204,204,1)',
-    flex: '0 0 100%', // para ocupar a linha toda
+    flex: '0 0 100%',
     overflow: 'visible',
-  };
-
-  const handleUpdate = (props: Partial<IComponent>) => {
-    updateComponent(component.id, { ...component, ...props });
+    display: 'flex', // Flex container for alignment
+    justifyContent: component.justifyContent || 'flex-start',
+    alignItems: component.alignItems || 'flex-start',
   };
 
   return (
-    <div style={style} className="relative">
+    <div style={{
+      backgroundColor: component.backgroundColor || 'transparent',
+      margin: component.margin ?? 0,
+      padding: component.padding ?? 0,
+      borderRadius: component.borderRadius ?? 0,
+      borderStyle: 'solid',
+      borderWidth: component.borderWidth ?? 1,
+      borderColor: component.borderColor ?? 'rgba(204,204,204,1)',
+      flex: '0 0 100%', // para ocupar a linha toda
+      overflow: 'visible',
+    }} className="relative">
       {/* Botão x */}
       <button
         type="button"
@@ -54,47 +65,46 @@ const FullDiv: React.FC<FullDivProps> = ({
           <ColorPickerButton
             value={component.backgroundColor || 'rgba(0,0,0,1)'}
             onChange={(c) => handleUpdate({ backgroundColor: c })}
+            label="Cor"
           />
         </label>
-        {/* Padding, Margin, etc. */}
-        <label>
-          Pad (px):
+        <label>Pad (px): <span>{component.padding || 0}</span>
           <input
-            type="number"
+            type="range"
+            min="0" max="100"
             value={component.padding || 0}
-            onChange={(e) => handleUpdate({ padding: parseInt(e.target.value) || 0 })}
+            onChange={(e) => handleUpdate({ padding: parseInt(e.target.value, 10) })}
             className="ml-1 w-14 border border-gray-300"
           />
         </label>
-        <label>
-          Marg (px):
+        <label>Marg (px): <span>{component.margin || 0}</span>
           <input
-            type="number"
+            type="range"
+            min="0" max="100"
             value={component.margin || 0}
-            onChange={(e) => handleUpdate({ margin: parseInt(e.target.value) || 0 })}
+            onChange={(e) => handleUpdate({ margin: parseInt(e.target.value, 10) })}
             className="ml-1 w-14 border border-gray-300"
           />
         </label>
-        <label>
-          BR (px):
+        <label>BR (px): <span>{component.borderRadius || 0}</span>
           <input
-            type="number"
+            type="range"
+            min="0" max="30"
             value={component.borderRadius || 0}
-            onChange={(e) => handleUpdate({ borderRadius: parseInt(e.target.value) || 0 })}
+            onChange={(e) => handleUpdate({ borderRadius: parseInt(e.target.value, 10) })}
             className="ml-1 w-14 border border-gray-300"
           />
         </label>
-        <label>
-          BW (px):
+        <label>BW (px): <span>{component.borderWidth || 1}</span>
           <input
-            type="number"
+            type="range"
+            min="0" max="10"
             value={component.borderWidth || 1}
-            onChange={(e) => handleUpdate({ borderWidth: parseInt(e.target.value) || 0 })}
+            onChange={(e) => handleUpdate({ borderWidth: parseInt(e.target.value, 10) })}
             className="ml-1 w-14 border border-gray-300"
           />
         </label>
-        <label>
-          Bord:
+        <label>Bord:
           <ColorPickerButton
             value={component.borderColor || 'rgba(204,204,204,1)'}
             onChange={(col) => handleUpdate({ borderColor: col })}

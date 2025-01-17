@@ -18,60 +18,40 @@ export default function AdminLayout({
   }
 
   return (
-      <div className="bg-gray-100">
-        {/* Header */}
-        <header className="bg-white shadow p-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/images/logo.png"
-              alt="Logo"
-              width={100}
-              height={40}
-              className="object-contain"
-            />
-            <span className="font-bold text-xl">Admin Panel</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-blue-600 hover:underline">
-              Voltar ao site
+    <div className="bg-gray-100">
+      {/* Layout com menu lateral e conteúdo */}
+      <div className="min-h-screen flex">
+        <aside className="w-64 bg-white hidden md:flex flex-col">
+          <nav className="flex-1 px-4 space-y-2">
+            <Link
+              href="/admin"
+              className="block px-2 py-2 rounded bg-gray-100 hover:bg-gray-200"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/admin/banners"
+              className="block px-2 py-2 rounded bg-gray-100 hover:bg-gray-200"
+            >
+              Banners
+            </Link>
+            <Link
+              href="/admin/lp"
+              className="block px-2 py-2 rounded bg-gray-100 hover:bg-gray-200"
+            >
+              Landing Page
             </Link>
             <button
               onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 w-full"
             >
               Sair
             </button>
-          </div>
-        </header>
+          </nav>
+        </aside>
 
-        {/* Layout com menu lateral e conteúdo */}
-        <div className="min-h-screen flex">
-          <aside className="w-64 bg-white hidden md:flex flex-col">
-            <nav className="flex-1 p-4 space-y-2">
-              <Link
-                href="/admin"
-                className="block px-2 py-2 rounded hover:bg-gray-200"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/admin/banners"
-                className="block px-2 py-2 rounded hover:bg-gray-200"
-              >
-                Banners
-              </Link>
-              <Link
-                href="/admin/lp"
-                className="block px-2 py-2 rounded hover:bg-gray-200"
-              >
-                Landing Page
-              </Link>
-            </nav>
-          </aside>
-
-          <main className="flex-1 p-4">{children}</main>
-        </div>
+        <main className="flex-1 p-4">{children}</main>
       </div>
+    </div>
   )
 }

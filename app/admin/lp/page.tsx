@@ -97,7 +97,7 @@ const LandingPageBuilder: React.FC = () => {
     <DndProvider backend={HTML5Backend}>
       <div className="flex gap-5">
         {/* Lateral */}
-        <div className="flex-1">
+        <div className="flex-1 max-w-[300px]">
           <h3 className="text-xl font-bold mb-3">Componentes</h3>
 
           {/* Div Em Linha */}
@@ -115,7 +115,7 @@ const LandingPageBuilder: React.FC = () => {
         </div>
 
         {/* Área principal */}
-        <div className="flex-[4]">
+        <div className="w-full max-w-7xl">
           <h3 className="text-xl font-bold mb-3">Área de Construção</h3>
 
           <DroppableArea onDrop={handleDrop} isMainArea>

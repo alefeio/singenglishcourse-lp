@@ -1,3 +1,5 @@
+// DroppableArea.tsx
+
 'use client';
 import React, { ReactNode } from 'react';
 import { useDrop } from 'react-dnd';
@@ -23,23 +25,27 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({
   isMainArea,
   isChildArea,
 }) => {
-  const [, drop] = useDrop(() => ({
+  const [{ canDrop, isOver }, drop] = useDrop(() => ({
     accept: Object.values(COMPONENT_TYPES),
-    drop: (item, monitor) => {
+    drop: (item: { type: COMPONENT_TYPES; generateChildren?: () => IComponent }, monitor) => {
       if (monitor.didDrop()) return;
       const extraChildren = item.generateChildren ? item.generateChildren() : null;
       onDrop(item.type, parentId || null, null, extraChildren);
       return { dropped: true };
     },
+    collect: monitor => ({
+      isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop(),
+    }),
   }));
 
-  // flex-wrap: wrap → Div (Linha Única) ocupa 100% e joga próximos pra linha de baixo
-  const containerClasses = isMainArea
-    ? 'min-h-[400px] p-5 border-2 border-dashed border-gray-300 mb-2 flex flex-wrap items-start'
-    : 'min-h-[100px] p-5 border border-dashed border-gray-300 mb-2 flex flex-wrap items-start';
+  const isActive = canDrop && isOver;
+  const backgroundColor = isActive ? '#e2e8f0' : isMainArea ? '#f8fafc' : 'transparent'; // Light blue background when active
+
+  const containerClasses = `min-h-[100px] p-1 flex flex-wrap items-start ${isActive ? 'border-2 border-dashed border-blue-500' : 'border border-gray-300'}`;
 
   return (
-    <div ref={drop} className={containerClasses}>
+    <div ref={drop} className={containerClasses} style={{ backgroundColor }}>
       {children}
     </div>
   );
