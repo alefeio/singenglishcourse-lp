@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/meu-ckeditor/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -19,6 +20,7 @@
 
 # production
 /build
+/meu-ckeditor/build
 
 # misc
 .DS_Store

@@ -11,3 +11,16 @@ body {
   margin: 0;
   padding: 0;
 }
+
+.ck-content h1 {
+  font-size: 2em; 
+  margin: 0.5em 0;
+}
+.ck-content h2 {
+  font-size: 1.6em; 
+  margin: 0.4em 0;
+}
+.ck-content h3 {
+  font-size: 1.2em; 
+  margin: 0.4em 0;
+}

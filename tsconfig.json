@@ -28,8 +28,14 @@
         "./*"
       ]
     },
-    "typeRoots": ["node_modules/@types", "src/types"]
+    "typeRoots": [
+      "node_modules/@types",
+      "src/types"
+    ]
   },
+  "files": [
+    "./types/ckeditor.d.ts"
+  ],
   "include": [
     "next-env.d.ts",
     "**/*.ts",

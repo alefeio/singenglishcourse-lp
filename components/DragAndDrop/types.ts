@@ -15,3 +15,22 @@ export interface IComponent {
   width?: number;   // Para imagens
   height?: number;  // Para imagens
 }
+
+export interface IComponent {
+  id: string;
+  type: COMPONENT_TYPES;
+  content: string;
+  parentSubId?: string | null;
+  children?: IComponent[] | null;
+
+  width?: number;
+  height?: number;
+
+  backgroundColor?: string;
+  padding?: number;
+  margin?: number;
+  borderRadius?: number;
+
+  borderWidth?: number;
+  borderColor?: string;
+}

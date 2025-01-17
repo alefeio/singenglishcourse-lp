@@ -1,0 +1,28 @@
+{
+  "name": "meu-ckeditor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config $(pwd)/webpack.config.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
+    "css-loader": "^7.1.2",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "@ckeditor/ckeditor5-basic-styles": "^44.1.0",
+    "@ckeditor/ckeditor5-editor-classic": "^44.1.0",
+    "@ckeditor/ckeditor5-essentials": "^44.1.0",
+    "@ckeditor/ckeditor5-font": "^44.1.0",
+    "@ckeditor/ckeditor5-heading": "^44.1.0",
+    "@ckeditor/ckeditor5-paragraph": "^44.1.0"
+  }
+}

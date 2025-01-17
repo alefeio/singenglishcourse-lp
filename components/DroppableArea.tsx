@@ -33,12 +33,10 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({
     },
   }));
 
-  // Em vez de "flex-wrap", usamos "flex-nowrap" + "overflow-x-auto"
-  // para que as DIV_INLINE permaneçam na mesma linha e se tiverem
-  // largura total > container, crie scrollbar horizontal.
+  // flex-wrap: wrap → Div (Linha Única) ocupa 100% e joga próximos pra linha de baixo
   const containerClasses = isMainArea
-    ? 'min-h-[400px] p-5 border-2 border-dashed border-gray-300 bg-gray-100 mb-2 flex flex-nowrap items-start gap-4 overflow-x-auto'
-    : 'min-h-[100px] p-5 border border-gray-300 bg-white mb-2 flex flex-nowrap items-start gap-4 overflow-x-auto';
+    ? 'min-h-[400px] p-5 border-2 border-dashed border-gray-300 mb-2 flex flex-wrap items-start'
+    : 'min-h-[100px] p-5 border border-dashed border-gray-300 mb-2 flex flex-wrap items-start';
 
   return (
     <div ref={drop} className={containerClasses}>
