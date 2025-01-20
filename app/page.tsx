@@ -1,96 +1,151 @@
-'use client'
+'use client';
 
-import Carousel from '@/components/Carousel'
-import Image from 'next/image'
+import Carousel from '@/components/Carousel';
+import { useEffect, useState } from 'react';
+
+interface IComponent {
+  id: string;
+  type: string;
+  content: string;
+  fontFamily?: string;
+  fontSize?: string;
+  textColor?: string;
+  textAlign?: string;
+  justifyContent?: string;
+  alignItems?: string;
+  margin?: number;
+  padding?: number;
+  width?: number;
+  height?: number;
+  children: IComponent[];
+}
 
 export default function LandingPage() {
+  const [components, setComponents] = useState<IComponent[]>([]);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await fetch('/api/pages', { method: 'GET' });
+        if (!res.ok) throw new Error('Erro ao buscar conteúdo da página');
+
+        const pages = await res.json();
+
+        const homePage = pages.find((page: { name: string }) => page.name === 'Home');
+
+        if (homePage && homePage.content) {
+          setComponents(homePage.content);
+        } else {
+          console.error('Página "Home" não encontrada ou sem conteúdo');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar a página:', error);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
+  const renderComponents = (components: IComponent[]) => {
+    return components.map((component) => {
+      const {
+        id,
+        type,
+        content,
+        fontFamily,
+        fontSize,
+        textColor,
+        textAlign,
+        justifyContent,
+        alignItems,
+        margin,
+        padding,
+        width,
+        height,
+        children,
+      } = component;
+
+      const containerStyles = {
+        margin: margin ? `${margin}px` : undefined,
+        padding: padding ? `${padding}px` : undefined,
+        width: width ? `${width}px` : undefined,
+        height: height ? `${height}px` : undefined,
+      };
+
+      const contentStyles = {
+        fontFamily,
+        fontSize,
+        color: textColor,
+        textAlign,
+        display: justifyContent || alignItems ? 'flex' : undefined,
+        justifyContent: justifyContent || undefined,
+        alignItems: alignItems || undefined,
+        width: '100%',
+        height: '100%',
+      };
+
+      if (type === 'divFull' || type === 'divInline') {
+        return (
+          <div
+            key={id}
+            style={{
+              display: type === 'divInline' ? 'inline-block' : 'block',
+              ...containerStyles,
+            }}
+          >
+            <div style={contentStyles}>{renderComponents(children)}</div>
+          </div>
+        );
+      }
+
+      if (type === 'text') {
+        return (
+          <div
+            key={id}
+            className="text-content"
+            style={{
+              fontFamily,
+              fontSize,
+              color: textColor,
+              textAlign,
+            }}
+            dangerouslySetInnerHTML={{ __html: content }}
+          ></div>
+        );
+      }
+
+      if (type === 'image') {
+        return (
+          <img
+            key={id}
+            src={content}
+            alt="Imagem"
+            style={{
+              width: width ? `${width}px` : 'auto',
+              height: height ? `${height}px` : 'auto',
+            }}
+          />
+        );
+      }
+
+      return null;
+    });
+  };
+
   return (
     <main className="flex flex-col">
       <Carousel />
 
-      {/* Sessão 1 */}
-      <section
-        id="sessao-1"
-        className="relative w-full h-screen flex items-center justify-center bg-gray-100"
+      <div
+        style={{
+          maxWidth: '1280px',
+          margin: '0 auto',
+          width: '100%',
+          position: 'relative',
+        }}
       >
-        {/* Imagem de fundo (exemplo) */}
-        <Image
-          src="/images/sessao1.png"       // AJUSTE para o nome real do arquivo
-          alt="Sessão 1"
-          fill
-          className="object-cover object-center"
-        />
-        {/* Overlay (opcional) para melhor contraste de texto */}
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-
-        {/* Legenda (texto) */}
-        <div className="relative z-10 max-w-3xl text-center p-4 text-white">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Nossa equipe especializada desenvolveu um método inovador para ensinar inglês com música para crianças
-          </h2>
-        </div>
-      </section>
-
-      {/* Sessão 2 */}
-      <section
-        id="sessao-2"
-        className="relative w-full h-screen flex items-center justify-center bg-gray-100"
-      >
-        <Image
-          src="/images/sessao2.png"       // AJUSTE para o nome real do arquivo
-          alt="Sessão 2"
-          fill
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-
-        <div className="relative z-10 max-w-3xl text-center p-4 text-white">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Nossa abordagem única utiliza o universo melódico, cultural e poético da canção para envolver emocionalmente os alunos e proporcionar aprendizado eficaz
-          </h2>
-        </div>
-      </section>
-
-      {/* Sessão 3 */}
-      <section
-        id="sessao-3"
-        className="relative w-full h-screen flex items-center justify-center bg-gray-100"
-      >
-        <Image
-          src="/images/sessao3.png"       // AJUSTE para o nome real do arquivo
-          alt="Sessão 3"
-          fill
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-
-        <div className="relative z-10 max-w-3xl text-center p-4 text-white">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Através de atividades que exploram o universo poético das canções, seus filhos serão imersos num contexto significativo onde a memorização rápida é desencadeada graças à identificação sentimental e às multi-dimensões que a linguagem musical proporciona
-          </h2>
-        </div>
-      </section>
-
-      {/* Sessão 4 */}
-      <section
-        id="sessao-4"
-        className="relative w-full h-screen flex items-center justify-center bg-gray-100"
-      >
-        <Image
-          src="/images/sessao4.png"       // AJUSTE para o nome real do arquivo
-          alt="Sessão 4"
-          fill
-          className="object-cover object-center"
-        />
-        <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-
-        <div className="relative z-10 max-w-3xl text-center p-4 text-white">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">
-            Material Didático: Nosso material didático foi pensado de maneira contextualizada, com canções de autoria própria da idealizadora do curso e grandes hits internacionais, com atividades de envolvimento nos contextos que cada poesia traz, adaptadas às faixas etárias
-          </h2>
-        </div>
-      </section>
-
+        <section className="p-4">{renderComponents(components)}</section>
+      </div>
     </main>
-  )
+  );
 }

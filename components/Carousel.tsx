@@ -22,8 +22,21 @@ export default function Carousel() {
             ctaLink: string;
         }[]
     >([]);
+    const [bannerHeight, setBannerHeight] = useState('50vh');
 
     useEffect(() => {
+        const fetchConfigurations = async () => {
+            try {
+                const res = await fetch('/api/configurations', { method: 'GET' });
+                if (!res.ok) throw new Error('Erro ao carregar configurações');
+                const data = await res.json();
+
+                setBannerHeight(data.bannerHeight || '50vh');
+            } catch (error) {
+                console.error('Erro ao carregar configurações:', error);
+            }
+        };
+
         const fetchBanners = async () => {
             try {
                 const bannersCollection = collection(db, 'banners');
@@ -38,11 +51,12 @@ export default function Carousel() {
             }
         };
 
+        fetchConfigurations();
         fetchBanners();
     }, []);
 
     return (
-        <div className="w-full h-screen">
+        <div className="w-full" style={{ height: bannerHeight }}>
             <Swiper
                 modules={[Navigation, Pagination]}
                 navigation

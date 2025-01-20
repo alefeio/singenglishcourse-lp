@@ -40,7 +40,7 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({
   }));
 
   const isActive = canDrop && isOver;
-  const backgroundColor = isActive ? '#e2e8f0' : isMainArea ? '#f8fafc' : 'transparent'; // Light blue background when active
+  const backgroundColor = isActive ? '#e2e8f0' : isMainArea ? '#fff' : 'transparent'; // Light blue background when active
 
   const containerClasses = `min-h-[100px] p-1 flex flex-wrap items-start ${isActive ? 'border-2 border-dashed border-blue-500' : 'border border-gray-300'}`;
 

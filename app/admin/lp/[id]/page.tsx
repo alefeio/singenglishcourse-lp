@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
@@ -8,17 +8,20 @@ import { COMPONENT_TYPES, IComponent } from '@/components/DragAndDrop/types';
 import DraggableComponent from '@/components/DraggableComponent';
 import DroppableArea from '@/components/DroppableArea';
 import RenderComponent from '@/components/RenderComponent/RenderComponent';
+import { useRouter, useParams } from 'next/navigation';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-const LandingPageBuilder: React.FC = () => {
+const EditPage: React.FC = () => {
+    const { id } = useParams();
+    const router = useRouter();
     const [components, setComponents] = useState<IComponent[]>([]);
     const [pageName, setPageName] = useState('');
     const [pageUrl, setPageUrl] = useState('');
     const [message, setMessage] = useState('');
     const [isSticky, setIsSticky] = useState(false);
 
-    // Handle sticky position for the Component bar
+    // Sticky position for Component Bar
     useEffect(() => {
         const handleScroll = () => {
             const scrollTop = window.scrollY;
@@ -29,6 +32,28 @@ const LandingPageBuilder: React.FC = () => {
             window.removeEventListener('scroll', handleScroll);
         };
     }, []);
+
+    // Fetch page details
+    useEffect(() => {
+        if (id) {
+            fetchPageDetails();
+        }
+    }, [id]);
+
+    const fetchPageDetails = async () => {
+        try {
+            const res = await fetch(`/api/pages/${id}`);
+            if (!res.ok) throw new Error('Erro ao carregar os dados da página');
+            const data = await res.json();
+
+            setPageName(data.name);
+            setPageUrl(data.url);
+            setComponents(data.content || []);
+        } catch (error) {
+            console.error('Erro ao carregar dados da página:', error);
+            setMessage('Erro ao carregar dados da página.');
+        }
+    };
 
     const handlePageNameChange = (name: string) => {
         setPageName(name);
@@ -123,38 +148,30 @@ const LandingPageBuilder: React.FC = () => {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('name', pageName);
-        formData.append('url', pageUrl);
-        formData.append('components', JSON.stringify(components));
-
         try {
-            const res = await fetch('/api/pages', {
-                method: 'POST',
-                body: formData,
+            const res = await fetch(`/api/pages/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: pageName,
+                    url: pageUrl,
+                    components,
+                }),
             });
-            if (!res.ok) {
-                throw new Error('Erro ao salvar a página');
-            }
-            const data = await res.json();
-            console.log('Página salva:', data);
-
+            if (!res.ok) throw new Error('Erro ao salvar a página');
             setMessage('Página salva com sucesso!');
-            setPageName('');
-            setPageUrl('');
-            setComponents([]);
         } catch (error) {
-            console.error(error);
+            console.error('Erro ao salvar a página:', error);
             setMessage('Erro ao salvar a página.');
         }
     };
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow">
+            <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow relative">
                 {/* Dados da Página */}
                 <section className="p-4 border border-gray-300 rounded bg-white shadow mb-6">
-                    <h3 className="text-xl font-bold mb-4 text-center">Dados da Página</h3>
+                    <h3 className="text-xl font-bold mb-4 text-center">Editar Página</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label className="flex flex-col">
                             Nome da Página:
@@ -181,7 +198,7 @@ const LandingPageBuilder: React.FC = () => {
                         onClick={handleSavePage}
                         className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                     >
-                        Salvar Página
+                        Salvar Alterações
                     </button>
                     {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
                 </section>
@@ -224,4 +241,4 @@ const LandingPageBuilder: React.FC = () => {
     );
 };
 
-export default LandingPageBuilder;
+export default EditPage;
