@@ -7,8 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
-        console.log('Buscando página com ID:', params.id);
-
         const pageRef = doc(db, 'paginas', params.id);
         const pageSnap = await getDoc(pageRef);
 
@@ -16,8 +14,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             console.error('Página não encontrada:', params.id);
             return NextResponse.json({ error: 'Página não encontrada' }, { status: 404 });
         }
-
-        console.log('Dados da página:', pageSnap.data());
         return NextResponse.json(pageSnap.data());
     } catch (error) {
         console.error('Erro ao buscar a página:', error);

@@ -17,6 +17,23 @@ const LandingPageBuilder: React.FC = () => {
     const [pageUrl, setPageUrl] = useState('');
     const [message, setMessage] = useState('');
     const [isSticky, setIsSticky] = useState(false);
+    const [pageWidth, setPageWidth] = useState('1280px'); // Estado para armazenar a largura máxima da página
+
+    // Busca configurações na coleção
+    useEffect(() => {
+        const fetchConfigurations = async () => {
+            try {
+                const res = await fetch('/api/configurations', { method: 'GET' });
+                if (!res.ok) throw new Error('Erro ao carregar configurações');
+                const data = await res.json();
+                setPageWidth(data.pageWidth || '1280px'); // Define a largura máxima
+            } catch (error) {
+                console.error('Erro ao carregar configurações:', error);
+            }
+        };
+
+        fetchConfigurations();
+    }, []);
 
     // Handle sticky position for the Component bar
     useEffect(() => {
@@ -90,6 +107,32 @@ const LandingPageBuilder: React.FC = () => {
         });
     };
 
+    const addComponent = (newComponent: IComponent, parentId: string | null) => {
+        if (!parentId) {
+            setComponents((prev) => [...prev, newComponent]);
+            return;
+        }
+
+        const addRecursively = (list: IComponent[]): IComponent[] =>
+            list.map((comp) => {
+                if (comp.id === parentId) {
+                    return {
+                        ...comp,
+                        children: [...(comp.children || []), newComponent],
+                    };
+                }
+                if (comp.children) {
+                    return {
+                        ...comp,
+                        children: addRecursively(comp.children),
+                    };
+                }
+                return comp;
+            });
+
+        setComponents((prev) => addRecursively(prev));
+    };
+
     const updateComponent = (id: string, updated: IComponent) => {
         const updateRecursively = (list: IComponent[]): IComponent[] =>
             list.map((comp) => {
@@ -140,6 +183,9 @@ const LandingPageBuilder: React.FC = () => {
             console.log('Página salva:', data);
 
             setMessage('Página salva com sucesso!');
+            setTimeout(() => {
+                setMessage('');
+            }, 3000);
             setPageName('');
             setPageUrl('');
             setComponents([]);
@@ -151,7 +197,7 @@ const LandingPageBuilder: React.FC = () => {
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow">
+            <div className="p-4 bg-white rounded shadow mx-auto" style={{ maxWidth: pageWidth }}>
                 {/* Dados da Página */}
                 <section className="p-4 border border-gray-300 rounded bg-white shadow mb-6">
                     <h3 className="text-xl font-bold mb-4 text-center">Dados da Página</h3>
@@ -212,9 +258,11 @@ const LandingPageBuilder: React.FC = () => {
                             <RenderComponent
                                 key={comp.id}
                                 component={comp}
+                                parentId={null}
                                 onDrop={handleDrop}
                                 updateComponent={updateComponent}
                                 deleteComponent={deleteComponent}
+                                addComponent={addComponent}
                             />
                         ))}
                     </DroppableArea>

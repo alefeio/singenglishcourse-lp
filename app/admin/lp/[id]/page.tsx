@@ -20,6 +20,23 @@ const EditPage: React.FC = () => {
     const [pageUrl, setPageUrl] = useState('');
     const [message, setMessage] = useState('');
     const [isSticky, setIsSticky] = useState(false);
+    const [pageWidth, setPageWidth] = useState('1280px');
+
+    // Busca configurações na coleção configuracoes
+    useEffect(() => {
+        const fetchConfigurations = async () => {
+            try {
+                const res = await fetch('/api/configurations', { method: 'GET' });
+                if (!res.ok) throw new Error('Erro ao carregar configurações');
+                const data = await res.json();
+                setPageWidth(data.pageWidth || '1280px'); // Define a largura máxima da página
+            } catch (error) {
+                console.error('Erro ao carregar configurações:', error);
+            }
+        };
+
+        fetchConfigurations();
+    }, []);
 
     // Sticky position for Component Bar
     useEffect(() => {
@@ -142,6 +159,40 @@ const EditPage: React.FC = () => {
         setComponents((prev) => removeRecursively(prev));
     };
 
+    const addComponent = (newComponent: IComponent, parentId: string | null) => {
+        console.log('newComponent:', newComponent);
+        console.log('parentId:', parentId);
+
+        // Caso não exista um parentId, o componente será adicionado à raiz
+        if (!parentId) {
+            setComponents((prev) => [...prev, newComponent]);
+            return;
+        }
+
+        // Adiciona o novo componente ao parentId correto, mantendo a hierarquia
+        const addRecursively = (list: IComponent[]): IComponent[] =>
+            list.map((comp) => {
+                // Verifica se o componente atual é o pai
+                if (comp.id === parentId) {
+                    return {
+                        ...comp,
+                        children: [...(comp.children || []), newComponent], // Adiciona o novo componente aos filhos
+                    };
+                }
+                // Caso contrário, busca recursivamente nos filhos
+                if (comp.children) {
+                    return {
+                        ...comp,
+                        children: addRecursively(comp.children),
+                    };
+                }
+                return comp;
+            });
+
+        // Atualiza os componentes com a hierarquia corrigida
+        setComponents((prev) => addRecursively(prev));
+    };
+
     const handleSavePage = async () => {
         if (!pageName || !pageUrl || components.length === 0) {
             setMessage('Preencha todos os campos e adicione componentes antes de salvar.');
@@ -160,6 +211,9 @@ const EditPage: React.FC = () => {
             });
             if (!res.ok) throw new Error('Erro ao salvar a página');
             setMessage('Página salva com sucesso!');
+            setTimeout(() => {
+                setMessage('');
+            }, 3000)
         } catch (error) {
             console.error('Erro ao salvar a página:', error);
             setMessage('Erro ao salvar a página.');
@@ -168,7 +222,7 @@ const EditPage: React.FC = () => {
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="max-w-7xl mx-auto p-4 bg-white rounded shadow relative">
+            <div className="rounded mx-auto" style={{ maxWidth: pageWidth }}>
                 {/* Dados da Página */}
                 <section className="p-4 border border-gray-300 rounded bg-white shadow mb-6">
                     <h3 className="text-xl font-bold mb-4 text-center">Editar Página</h3>
@@ -204,11 +258,7 @@ const EditPage: React.FC = () => {
                 </section>
 
                 {/* Componentes */}
-                <div
-                    className={`bg-white shadow-md p-4 rounded ${
-                        isSticky ? 'fixed top-0 left-0 w-full z-10' : 'relative'
-                    }`}
-                >
+                <div className={`bg-white shadow-md p-4 rounded ${isSticky ? 'fixed top-0 left-0 w-full z-10' : 'relative'}`}>
                     <div className="flex gap-4 justify-center">
                         <DraggableComponent type={COMPONENT_TYPES.DIV_INLINE}>
                             Div (Em Linha)
@@ -218,20 +268,29 @@ const EditPage: React.FC = () => {
                         </DraggableComponent>
                         <DraggableComponent type={COMPONENT_TYPES.TEXT}>Texto</DraggableComponent>
                         <DraggableComponent type={COMPONENT_TYPES.IMAGE}>Imagem</DraggableComponent>
+                        {isSticky && <button
+                            onClick={handleSavePage}
+                            className="bg-blue-600 text-white p-3 rounded hover:bg-blue-700"
+                        >
+                            Salvar
+                        </button>}
                     </div>
+                    {isSticky && message && <p className="text-center mt-2 text-sm text-gray-600">{message}</p>}
                 </div>
 
                 {/* Área de Construção */}
-                <section className="flex-1 bg-white shadow-md p-6 rounded mt-6">
+                <section className="pt-4 flex-1 bg-white mt-6">
                     <h3 className="text-xl font-bold mb-4 text-center">Área de Construção</h3>
                     <DroppableArea onDrop={handleDrop} isMainArea>
                         {components.map((comp) => (
                             <RenderComponent
                                 key={comp.id}
                                 component={comp}
+                                parentId={null}
                                 onDrop={handleDrop}
                                 updateComponent={updateComponent}
                                 deleteComponent={deleteComponent}
+                                addComponent={addComponent} // Passa a função corretamente
                             />
                         ))}
                     </DroppableArea>

@@ -115,6 +115,9 @@ export default function BannersAdminPage() {
         throw new Error(data.error || 'Erro ao excluir banner');
       }
       setMessage('Banner excluído!');
+      setTimeout(() => {
+        setMessage('');
+      }, 3000)
       fetchBanners();
     } catch (err: unknown) {
       console.error(err);

@@ -20,7 +20,7 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
   }));
 
   return (
-    <div ref={drag} className="p-3 mb-3 border border-gray-300 cursor-grab bg-gray-50">
+    <div ref={drag} className="p-3 border border-gray-300 cursor-grab bg-gray-50">
       {children}
     </div>
   );

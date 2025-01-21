@@ -38,6 +38,9 @@ export default function PagesAdmin() {
       const res = await fetch(`/api/pages/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Erro ao excluir página');
       setMessage('Página excluída com sucesso!');
+      setTimeout(() => {
+        setMessage('');
+      }, 3000)
       fetchPages();
     } catch (err) {
       console.error('Erro ao excluir página:', err);

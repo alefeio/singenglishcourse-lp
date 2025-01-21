@@ -40,7 +40,7 @@ const ColorPickerButton: React.FC<ColorPickerButtonProps> = ({ value, onChange, 
       </button>
 
       {showPicker && (
-        <div style={{ position: 'absolute', zIndex: 9999, background: '#fff' }}>
+        <div style={{ position: 'absolute', zIndex: 1, background: '#fff' }}>
           <SketchPicker
             color={value || 'rgba(0, 0, 0, 1)'}
             onChangeComplete={(color) => {

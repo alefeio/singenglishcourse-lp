@@ -72,7 +72,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                 type="button"
                 onClick={() => deleteComponent(component.id)}
                 className="absolute top-0 right-0 m-1 text-white bg-red-600 rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                style={{ zIndex: 20 }}
+                style={{ zIndex: 1 }}
             >
                 x
             </button>

@@ -33,4 +33,5 @@ export interface IComponent {
 
   borderWidth?: number;
   borderColor?: string;
+  position?: string;
 }

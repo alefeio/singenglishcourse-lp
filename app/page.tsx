@@ -22,15 +22,27 @@ interface IComponent {
 
 export default function LandingPage() {
   const [components, setComponents] = useState<IComponent[]>([]);
+  const [pageWidth, setPageWidth] = useState('1280px'); // Estado para armazenar o valor de pageWidth
 
   useEffect(() => {
+    const fetchConfigurations = async () => {
+      try {
+        const res = await fetch('/api/configurations', { method: 'GET' });
+        if (!res.ok) throw new Error('Erro ao buscar configurações');
+
+        const data = await res.json();
+        setPageWidth(data.pageWidth || '1280px'); // Define o valor de pageWidth
+      } catch (error) {
+        console.error('Erro ao buscar configurações:', error);
+      }
+    };
+
     const fetchContent = async () => {
       try {
         const res = await fetch('/api/pages', { method: 'GET' });
         if (!res.ok) throw new Error('Erro ao buscar conteúdo da página');
 
         const pages = await res.json();
-
         const homePage = pages.find((page: { name: string }) => page.name === 'Home');
 
         if (homePage && homePage.content) {
@@ -43,6 +55,7 @@ export default function LandingPage() {
       }
     };
 
+    fetchConfigurations();
     fetchContent();
   }, []);
 
@@ -138,7 +151,7 @@ export default function LandingPage() {
 
       <div
         style={{
-          maxWidth: '1280px',
+          maxWidth: pageWidth, // Usa o valor de pageWidth obtido da coleção configuracoes
           margin: '0 auto',
           width: '100%',
           position: 'relative',
