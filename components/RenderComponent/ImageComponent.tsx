@@ -1,5 +1,3 @@
-// RenderComponent/ImageComponent.tsx
-
 'use client';
 import React, { useRef, useState, useEffect } from 'react';
 import { IComponent } from '@/components/DragAndDrop/types';
@@ -36,6 +34,14 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
         ev.preventDefault();
         ev.stopPropagation();
         setIsResizing(true);
+    };
+
+    const handleBorderRadiusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newBorderRadius = parseInt(e.target.value, 10) || 0;
+        updateComponent(component.id, {
+            ...component,
+            borderRadius: newBorderRadius,
+        });
     };
 
     useEffect(() => {
@@ -89,6 +95,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                                 width: component.width || 300,
                                 height: component.height || 'auto',
                                 maxWidth: '100%',
+                                borderRadius: component.borderRadius || 0, // Apply border-radius
                             }}
                         />
                         {/* Alça de redimensionar a imagem */}
@@ -116,7 +123,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                             className="ml-1 w-16 border border-gray-300"
                         />
                     </label>
-                    <label>
+                    <label className="mr-2">
                         Altura (px):
                         <input
                             type="number"
@@ -127,6 +134,15 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                                     height: parseInt(e.target.value) || 0,
                                 })
                             }
+                            className="ml-1 w-16 border border-gray-300"
+                        />
+                    </label>
+                    <label>
+                        Border Radius (px):
+                        <input
+                            type="number"
+                            value={component.borderRadius || 0}
+                            onChange={handleBorderRadiusChange}
                             className="ml-1 w-16 border border-gray-300"
                         />
                     </label>

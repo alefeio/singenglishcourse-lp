@@ -17,6 +17,7 @@ interface IComponent {
   padding?: number;
   width?: number;
   height?: number;
+  borderRadius?: number;
   children: IComponent[];
 }
 
@@ -75,38 +76,42 @@ export default function LandingPage() {
         padding,
         width,
         height,
+        borderRadius,
         children,
       } = component;
 
-      const containerStyles = {
+      const containerStyles: React.CSSProperties = {
         margin: margin ? `${margin}px` : undefined,
         padding: padding ? `${padding}px` : undefined,
         width: width ? `${width}px` : undefined,
         height: height ? `${height}px` : undefined,
+        display: 'flex', // Garante flex para alinhamento interno
+        flexDirection: type === 'divInline' ? 'column' : 'row', // Conteúdo interno organizado verticalmente
+        justifyContent: justifyContent || 'flex-start',
+        alignItems: alignItems || 'flex-start',
       };
 
-      const contentStyles = {
+      const textStyles: React.CSSProperties = {
         fontFamily,
         fontSize,
         color: textColor,
         textAlign,
-        display: justifyContent || alignItems ? 'flex' : undefined,
-        justifyContent: justifyContent || undefined,
-        alignItems: alignItems || undefined,
-        width: '100%',
-        height: '100%',
+        width: width ? `${width}px` : 'auto',
+        height: height ? `${height}px` : 'auto',
+        overflow: 'hidden', // Evita extrapolar limites
+      };
+
+      const imageStyles: React.CSSProperties = {
+        width: width ? `${width}px` : 'auto',
+        height: height ? `${height}px` : 'auto',
+        borderRadius: borderRadius ? `${borderRadius}px` : undefined,
+        objectFit: 'cover', // Mantém proporções
       };
 
       if (type === 'divFull' || type === 'divInline') {
         return (
-          <div
-            key={id}
-            style={{
-              display: type === 'divInline' ? 'inline-block' : 'block',
-              ...containerStyles,
-            }}
-          >
-            <div style={contentStyles}>{renderComponents(children)}</div>
+          <div key={id} style={containerStyles}>
+            {renderComponents(children)}
           </div>
         );
       }
@@ -116,12 +121,7 @@ export default function LandingPage() {
           <div
             key={id}
             className="text-content"
-            style={{
-              fontFamily,
-              fontSize,
-              color: textColor,
-              textAlign,
-            }}
+            style={textStyles}
             dangerouslySetInnerHTML={{ __html: content }}
           ></div>
         );
@@ -133,10 +133,7 @@ export default function LandingPage() {
             key={id}
             src={content}
             alt="Imagem"
-            style={{
-              width: width ? `${width}px` : 'auto',
-              height: height ? `${height}px` : 'auto',
-            }}
+            style={imageStyles}
           />
         );
       }

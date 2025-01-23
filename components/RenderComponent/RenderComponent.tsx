@@ -67,7 +67,6 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
           component={component}
           updateComponent={updateComponent}
           deleteComponent={deleteComponent}
-          duplicateComponent={handleDuplicate} // Usa a função handleDuplicate
         />
       );
     case COMPONENT_TYPES.IMAGE:
@@ -76,7 +75,6 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
           component={component}
           updateComponent={updateComponent}
           deleteComponent={deleteComponent}
-          duplicateComponent={handleDuplicate} // Usa a função handleDuplicate
         />
       );
     default:
