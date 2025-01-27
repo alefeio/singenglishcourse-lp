@@ -19,6 +19,8 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
     item: { type, generateChildren },
   }));
 
+  console.log('Dragging component:', type);
+
   return (
     <div ref={drag} className="p-3 border border-gray-300 cursor-grab bg-gray-50">
       {children}

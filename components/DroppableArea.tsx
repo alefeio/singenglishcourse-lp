@@ -28,15 +28,21 @@ const DroppableArea: React.FC<DroppableAreaProps> = ({
   const [{ canDrop, isOver }, drop] = useDrop(() => ({
     accept: Object.values(COMPONENT_TYPES),
     drop: (item: { type: COMPONENT_TYPES; generateChildren?: () => IComponent }, monitor) => {
-      if (monitor.didDrop()) return;
+      if (monitor.didDrop()) {
+        console.log('Drop ignored (nested drop detected)');
+        return;
+      };
+      console.log('Dropped on parentId:', parentId);
       const extraChildren = item.generateChildren ? item.generateChildren() : null;
       onDrop(item.type, parentId || null, null, extraChildren);
       return { dropped: true };
     },
-    collect: monitor => ({
-      isOver: monitor.isOver({ shallow: true }),
-      canDrop: monitor.canDrop(),
-    }),
+    collect: (monitor) => {
+      const isOver = monitor.isOver({ shallow: true });
+      const canDrop = monitor.canDrop();
+      console.log('DroppableArea status:', { isOver, canDrop });
+      return { isOver, canDrop };
+    },
   }));
 
   const isActive = canDrop && isOver;

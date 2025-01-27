@@ -48,7 +48,7 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
           updateComponent={updateComponent}
           deleteComponent={deleteComponent}
           addComponent={addComponent} // Adicione esta linha
-          parentId={parentId || null} 
+          parentId={parentId || null}
         />
       );
     case COMPONENT_TYPES.DIV_FULL:

@@ -116,7 +116,6 @@ const FullDiv: React.FC<FullDivProps> = ({
         borderStyle: 'solid',
         borderWidth: component.borderWidth ?? 1,
         borderColor: component.borderColor || 'rgba(204,204,204,1)',
-        display: 'flex',
         justifyContent: component.justifyContent || 'flex-start',
         alignItems: component.alignItems || 'flex-start',
         flex: '0 0 100%',

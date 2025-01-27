@@ -14,7 +14,7 @@ interface TextComponentProps {
   component: IComponent;
   updateComponent: (id: string, updated: IComponent) => void;
   deleteComponent: (id: string) => void;
-  duplicateComponent: (newComponent: IComponent, parentId: string | null) => void;
+  duplicateComponent?: (newComponent: IComponent, parentId: string | null) => void;
 }
 
 const TextComponent: React.FC<TextComponentProps> = ({
@@ -33,6 +33,8 @@ const TextComponent: React.FC<TextComponentProps> = ({
   const [textColor, setTextColor] = useState(component.textColor || '#000000');
   const [fontSize, setFontSize] = useState(component.fontSize || '1rem');
   const [fontFamily, setFontFamily] = useState(component.fontFamily || 'Arial, sans-serif');
+  const [padding, setPadding] = useState(component.padding || 0);
+  const [borderWidth, setBorderWidth] = useState(component.borderWidth || 1);
 
   useEffect(() => {
     setEditorContent(component.content || '');
@@ -47,7 +49,7 @@ const TextComponent: React.FC<TextComponentProps> = ({
       ...component,
       id: Math.random().toString(36).substring(2, 9),
     };
-    duplicateComponent(duplicatedComponent, component.parentId || null);
+    duplicateComponent?.(duplicatedComponent, component.parentId || null);
     setMenuOpen(false);
   };
 
@@ -100,15 +102,15 @@ const TextComponent: React.FC<TextComponentProps> = ({
     fontFamily,
     backgroundColor: component.backgroundColor || 'transparent',
     margin: component.margin ?? 0,
-    padding: component.padding ?? 0,
+    padding,
     borderRadius: component.borderRadius ?? 0,
     borderStyle: 'solid',
-    borderWidth: component.borderWidth ?? 1,
+    borderWidth,
     borderColor: component.borderColor || 'rgba(204,204,204,1)',
     width: component.width || '100%',
     height: component.height || 'auto',
     overflow: 'visible',
-    maxWidth: '100%', // Enforce the 100% max width of parent
+    maxWidth: '100%',
   };
 
   const handleEditorChange = (data: string) => {
@@ -165,6 +167,86 @@ const TextComponent: React.FC<TextComponentProps> = ({
             <h3 className="text-lg font-semibold mb-4">Personalizar Estilo</h3>
 
             <label className="block mb-2">
+              Alinhamento do Texto:
+              <select
+                value={textAlign}
+                onChange={(e) => {
+                  setTextAlign(e.target.value);
+                  handleStyleUpdate({ textAlign: e.target.value });
+                }}
+                className="ml-1 border border-gray-300 p-1 w-full"
+              >
+                <option value="left">Esquerda</option>
+                <option value="center">Centro</option>
+                <option value="right">Direita</option>
+                <option value="justify">Justificar</option>
+              </select>
+            </label>
+
+            <label className="block mb-2">
+              Cor do Texto:
+              <ColorPickerButton
+                value={textColor}
+                onChange={(color) => {
+                  setTextColor(color);
+                  handleStyleUpdate({ textColor: color });
+                }}
+              />
+            </label>
+
+            <label className="block mb-2">
+              Tamanho da Fonte:
+              <select
+                value={fontSize}
+                onChange={(e) => {
+                  setFontSize(e.target.value);
+                  handleStyleUpdate({ fontSize: e.target.value });
+                }}
+                className="ml-1 border border-gray-300 p-1 w-full"
+              >
+                <option value="1rem">1rem</option>
+                <option value="1.2rem">1.2rem</option>
+                <option value="1.4rem">1.4rem</option>
+                <option value="1.6rem">1.6rem</option>
+                <option value="1.8rem">1.8rem</option>
+                <option value="2rem">2rem</option>
+              </select>
+            </label>
+
+            <label className="block mb-2">
+              Tipo de Fonte:
+              <select
+                value={fontFamily}
+                onChange={(e) => {
+                  setFontFamily(e.target.value);
+                  handleStyleUpdate({ fontFamily: e.target.value });
+                }}
+                className="ml-1 border border-gray-300 p-1 w-full"
+              >
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="Courier New, monospace">Courier New</option>
+                <option value="Times New Roman, serif">Times New Roman</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+              </select>
+            </label>
+
+            <label className="block mb-2">
+              Padding:
+              <input
+                type="range"
+                min="0"
+                max="50"
+                value={padding}
+                onChange={(e) => {
+                  setPadding(parseInt(e.target.value, 10));
+                  handleStyleUpdate({ padding: parseInt(e.target.value, 10) });
+                }}
+                className="w-full"
+              />
+            </label>
+
+            <label className="block mb-2">
               Largura (px):
               <input
                 type="number"
@@ -181,6 +263,29 @@ const TextComponent: React.FC<TextComponentProps> = ({
                 value={component.height || ''}
                 onChange={(e) => handleStyleUpdate({ height: parseInt(e.target.value, 10) })}
                 className="w-full border border-gray-300 rounded p-1"
+              />
+            </label>
+
+            <label className="block mb-2">
+              Espessura da Borda:
+              <input
+                type="range"
+                min="0"
+                max="10"
+                value={borderWidth}
+                onChange={(e) => {
+                  setBorderWidth(parseInt(e.target.value, 10));
+                  handleStyleUpdate({ borderWidth: parseInt(e.target.value, 10) });
+                }}
+                className="w-full"
+              />
+            </label>
+
+            <label className="block mb-2">
+              Cor da Borda:
+              <ColorPickerButton
+                value={component.borderColor || 'rgba(204,204,204,1)'}
+                onChange={(color) => handleStyleUpdate({ borderColor: color })}
               />
             </label>
 

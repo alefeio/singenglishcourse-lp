@@ -106,10 +106,23 @@ const EditPage: React.FC = () => {
             newComponent.height = 0;
         }
 
+        if (type === COMPONENT_TYPES.BUTTON) {
+            newComponent.content = 'Clique aqui'; // Texto padrão do botão
+            newComponent.backgroundColor = '#007BFF'; // Cor padrão do botão
+            newComponent.textColor = '#FFFFFF'; // Cor padrão do texto
+            newComponent.fontSize = '16px'; // Tamanho padrão da fonte
+            newComponent.padding = '10px'; // Padding padrão
+            newComponent.borderRadius = '5px'; // Bordas arredondadas padrão
+        }
+
         if (!parentId) {
             setComponents((prev) => [...prev, newComponent]);
             return;
         }
+
+        console.log('Handle drop triggered for type:', type);
+        console.log('Parent ID:', parentId);
+        console.log('Components before adding:', components);
 
         setComponents((prev) => {
             const updateRecursively = (list: IComponent[]): IComponent[] =>
@@ -130,6 +143,8 @@ const EditPage: React.FC = () => {
                 });
             return updateRecursively(prev);
         });
+
+        console.log('Components after adding:', newComponent, components);
     };
 
     const updateComponent = (id: string, updated: IComponent) => {
@@ -144,6 +159,7 @@ const EditPage: React.FC = () => {
                 }
                 return comp;
             });
+
         setComponents((prev) => updateRecursively(prev));
     };
 
@@ -268,6 +284,7 @@ const EditPage: React.FC = () => {
                         </DraggableComponent>
                         <DraggableComponent type={COMPONENT_TYPES.TEXT}>Texto</DraggableComponent>
                         <DraggableComponent type={COMPONENT_TYPES.IMAGE}>Imagem</DraggableComponent>
+                        <DraggableComponent type={COMPONENT_TYPES.BUTTON}>Botão</DraggableComponent>
                         {isSticky && <button
                             onClick={handleSavePage}
                             className="bg-blue-600 text-white p-3 rounded hover:bg-blue-700"

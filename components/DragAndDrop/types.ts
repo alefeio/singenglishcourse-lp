@@ -4,16 +4,7 @@ export enum COMPONENT_TYPES {
   DIV_FULL = 'divFull',     // Div que ocupa a linha inteira
   TEXT = 'text',
   IMAGE = 'image',
-}
-
-export interface IComponent {
-  id: string;
-  type: COMPONENT_TYPES;
-  content: string;
-  parentSubId?: string | null;
-  children?: IComponent[] | null;
-  width?: number;   // Para imagens
-  height?: number;  // Para imagens
+  BUTTON = 'button',
 }
 
 export interface IComponent {
@@ -27,11 +18,14 @@ export interface IComponent {
   height?: number;
 
   backgroundColor?: string;
-  padding?: number;
-  margin?: number;
-  borderRadius?: number;
+  padding?: string;
+  margin?: string;
+  borderRadius?: string;
 
   borderWidth?: number;
   borderColor?: string;
   position?: string;
+
+  textColor?: string;
+  fontSize?: string;
 }

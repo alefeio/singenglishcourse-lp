@@ -110,7 +110,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
             {component.content && (
                 <div className="mt-2 text-sm">
                     <label className="mr-2">
-                        Largura (px):
+                        W (px):
                         <input
                             type="number"
                             value={component.width || 300}
@@ -124,7 +124,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                         />
                     </label>
                     <label className="mr-2">
-                        Altura (px):
+                        H (px):
                         <input
                             type="number"
                             value={component.height || 0}
@@ -138,7 +138,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                         />
                     </label>
                     <label>
-                        Border Radius (px):
+                        BR (px):
                         <input
                             type="number"
                             value={component.borderRadius || 0}
