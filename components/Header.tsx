@@ -54,23 +54,20 @@ export default function Header() {
           <Link href="#testimonials" scroll={false} className="hover:text-blue-600">
             Depoimentos
           </Link>
-          {isLoggedIn && (
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-            >
-              Sair
-            </button>
-          )}
         </nav>
 
         {/* Botão CTA para desktop */}
-        <Link
+        {/* <Link
           href="#cta-final"
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold hidden md:inline-block"
+        > */}
+        <a
+          href="#matricula"
+          className="bg-[#ea428e] text-white px-4 py-2 rounded hover:bg-[#cb2570] text-sm font-semibold hidden md:inline-block"
         >
-          Fale Conosco
-        </Link>
+          Reserve sua Matrícula
+        </a>
+        {/* </Link> */}
 
         {/* Botão de menu hambúrguer para mobile */}
         <button

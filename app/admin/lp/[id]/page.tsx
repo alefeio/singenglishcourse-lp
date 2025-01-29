@@ -115,6 +115,11 @@ const EditPage: React.FC = () => {
             newComponent.borderRadius = '5px'; // Bordas arredondadas padrão
         }
 
+        if (type === COMPONENT_TYPES.FORM) {
+            newComponent.content = 'Novo Formulário';
+            newComponent.children = [];
+        }
+
         if (!parentId) {
             setComponents((prev) => [...prev, newComponent]);
             return;
@@ -285,6 +290,7 @@ const EditPage: React.FC = () => {
                         <DraggableComponent type={COMPONENT_TYPES.TEXT}>Texto</DraggableComponent>
                         <DraggableComponent type={COMPONENT_TYPES.IMAGE}>Imagem</DraggableComponent>
                         <DraggableComponent type={COMPONENT_TYPES.BUTTON}>Botão</DraggableComponent>
+                        <DraggableComponent type={COMPONENT_TYPES.FORM}>Formulário</DraggableComponent>
                         {isSticky && <button
                             onClick={handleSavePage}
                             className="bg-blue-600 text-white p-3 rounded hover:bg-blue-700"

@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { IComponent } from '@/components/DragAndDrop/types';
 import dynamic from 'next/dynamic';
 import ColorPickerButton from './ColorPickerButton';
@@ -21,7 +21,6 @@ const TextComponent: React.FC<TextComponentProps> = ({
   component,
   updateComponent,
   deleteComponent,
-  duplicateComponent,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -40,18 +39,12 @@ const TextComponent: React.FC<TextComponentProps> = ({
     setEditorContent(component.content || '');
   }, [component.content]);
 
-  const handleStyleUpdate = (newStyles: Partial<IComponent>) => {
-    updateComponent(component.id, { ...component, ...newStyles });
-  };
-
-  const handleDuplicate = () => {
-    const duplicatedComponent: IComponent = {
-      ...component,
-      id: Math.random().toString(36).substring(2, 9),
-    };
-    duplicateComponent?.(duplicatedComponent, component.parentId || null);
-    setMenuOpen(false);
-  };
+  const handleStyleUpdate = useCallback(
+    (newStyles: Partial<IComponent>) => {
+      updateComponent(component.id, { ...component, ...newStyles });
+    },
+    [component, updateComponent]
+  );
 
   const startResize = (direction: 'horizontal' | 'vertical') => (e: React.MouseEvent) => {
     e.preventDefault();
@@ -93,10 +86,10 @@ const TextComponent: React.FC<TextComponentProps> = ({
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [isResizing, resizeDirection]);
+  }, [isResizing, resizeDirection, handleStyleUpdate]);
 
   const style: React.CSSProperties = {
-    textAlign,
+    textAlign: textAlign,
     color: textColor,
     fontSize,
     fontFamily,
@@ -136,12 +129,6 @@ const TextComponent: React.FC<TextComponentProps> = ({
 
       {menuOpen && (
         <div className="absolute top-8 right-0 bg-white border border-gray-300 rounded shadow-lg z-30">
-          <button
-            onClick={handleDuplicate}
-            className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            Duplicar
-          </button>
           <button
             onClick={() => {
               setMenuOpen(false);
@@ -304,7 +291,7 @@ const TextComponent: React.FC<TextComponentProps> = ({
         <CKEditor
           editor={ClassicEditor}
           data={editorContent}
-          onChange={(_event: any, editor: any) => {
+          onChange={(_event, editor) => {
             const data = editor.getData();
             handleEditorChange(data);
           }}

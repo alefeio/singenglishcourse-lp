@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
 import { IComponent } from '@/components/DragAndDrop/types';
@@ -25,15 +25,6 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
 
   const handleStyleUpdate = (newStyles: Partial<IComponent>) => {
     updateComponent(component.id, { ...component, ...newStyles });
-  };
-
-  const handleDuplicate = () => {
-    const duplicatedComponent: IComponent = {
-      ...component,
-      id: Math.random().toString(36).substring(2, 9),
-    };
-    duplicateComponent?.(duplicatedComponent, component.parentId || null);
-    setMenuOpen(false);
   };
 
   const startResize = (direction: 'horizontal' | 'vertical') => (e: React.MouseEvent) => {
@@ -82,7 +73,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
     backgroundColor: component.backgroundColor || '#007BFF',
     color: component.textColor || '#FFF',
     fontSize: component.fontSize || '16px',
-    padding: component.padding || '10px 20px',
+    padding: component.padding || '10px',
     borderRadius: component.borderRadius || '5px',
     width: component.width ? `${component.width}px` : 'auto',
     height: component.height ? `${component.height}px` : 'auto',
@@ -90,6 +81,8 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
     cursor: 'pointer',
     textAlign: 'center',
     display: 'inline-block',
+    marginLeft: component.align === 'center' ? 'auto' : component.align === 'right' ? 'auto' : undefined,
+    marginRight: component.align === 'center' ? 'auto' : undefined,
   };
 
   return (
@@ -110,12 +103,6 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
 
       {menuOpen && (
         <div className="absolute top-8 right-0 bg-white border border-gray-300 rounded shadow-lg z-30">
-          <button
-            onClick={handleDuplicate}
-            className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            Duplicar
-          </button>
           <button
             onClick={() => {
               setMenuOpen(false);
@@ -170,7 +157,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
               Tamanho da Fonte:
               <input
                 type="number"
-                value={component.fontSize || 16}
+                value={component.fontSize?.replace('px', '') || 16}
                 onChange={(e) => handleStyleUpdate({ fontSize: `${e.target.value}px` })}
                 className="w-full border border-gray-300 rounded p-1"
               />
@@ -179,9 +166,9 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
             <label className="block mb-2">
               Padding:
               <input
-                type="text"
-                value={component.padding || '10px 20px'}
-                onChange={(e) => handleStyleUpdate({ padding: e.target.value })}
+                type="number"
+                value={component.padding?.replace('px', '') || 10}
+                onChange={(e) => handleStyleUpdate({ padding: `${e.target.value}px` })}
                 className="w-full border border-gray-300 rounded p-1"
               />
             </label>
@@ -189,11 +176,24 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
             <label className="block mb-2">
               Border Radius:
               <input
-                type="text"
-                value={component.borderRadius || '5px'}
-                onChange={(e) => handleStyleUpdate({ borderRadius: e.target.value })}
+                type="number"
+                value={component.borderRadius?.replace('px', '') || 5}
+                onChange={(e) => handleStyleUpdate({ borderRadius: `${e.target.value}px` })}
                 className="w-full border border-gray-300 rounded p-1"
               />
+            </label>
+
+            <label className="block mb-2">
+              Alinhamento Horizontal:
+              <select
+                value={component.align || 'left'}
+                onChange={(e) => handleStyleUpdate({ align: e.target.value })}
+                className="w-full border border-gray-300 rounded p-1"
+              >
+                <option value="left">Esquerda</option>
+                <option value="center">Centralizado</option>
+                <option value="right">Direita</option>
+              </select>
             </label>
 
             <button

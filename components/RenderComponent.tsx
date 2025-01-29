@@ -2,7 +2,8 @@
 import React from 'react';
 import DroppableArea from './DroppableArea';
 import { COMPONENT_TYPES, IComponent } from './DragAndDrop/types';
-import ButtonComponent from './ButtonComponent';
+import ButtonComponent from './RenderComponent/ButtonComponent';
+import Image from 'next/image';
 
 interface RenderComponentProps {
     component: IComponent;
@@ -20,6 +21,42 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
     onDrop,
     updateComponent,
 }) => {
+    const containerRef = React.useRef<HTMLDivElement>(null);
+    const [isResizing, setIsResizing] = React.useState(false);
+
+    // Efeito que escuta mousemove e mouseup no document
+    React.useEffect(() => {
+        if (!isResizing) return;
+
+        const onMouseMove = (moveEvt: MouseEvent) => {
+            if (!containerRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+
+            // Distância da borda esquerda da div até o mouse
+            const newWidth = moveEvt.clientX - rect.left;
+
+            // Limite mínimo (poderia ser 50px, 100px, etc.)
+            if (newWidth > 50) {
+                updateComponent(component.id, {
+                    ...component,
+                    width: newWidth, // define a div como width fixa
+                });
+            }
+        };
+
+        const onMouseUp = () => {
+            setIsResizing(false);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+
+        return () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+    }, [isResizing, component, updateComponent]);
+
     // Função p/ atualizar imagem
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -63,14 +100,10 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
                 />
             </div>
         );
-    }
+    }    
 
     // --------------------------- DIV_INLINE ---------------------------
     if (component.type === COMPONENT_TYPES.DIV_INLINE) {
-        // Ref para a div (usada para obter boundingClientRect, etc.)
-        const containerRef = React.useRef<HTMLDivElement>(null);
-        // Estado local para saber se estamos arrastando a borda
-        const [isResizing, setIsResizing] = React.useState(false);
 
         // Inicia o resize
         const startResize = (ev: React.MouseEvent<HTMLDivElement>) => {
@@ -79,45 +112,12 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
             setIsResizing(true);
         };
 
-        // Efeito que escuta mousemove e mouseup no document
-        React.useEffect(() => {
-            if (!isResizing) return;
-
-            const onMouseMove = (moveEvt: MouseEvent) => {
-                if (!containerRef.current) return;
-                const rect = containerRef.current.getBoundingClientRect();
-
-                // Distância da borda esquerda da div até o mouse
-                const newWidth = moveEvt.clientX - rect.left;
-
-                // Limite mínimo (poderia ser 50px, 100px, etc.)
-                if (newWidth > 50) {
-                    updateComponent(component.id, {
-                        ...component,
-                        width: newWidth, // define a div como width fixa
-                    });
-                }
-            };
-
-            const onMouseUp = () => {
-                setIsResizing(false);
-            };
-
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-
-            return () => {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            };
-        }, [isResizing, component, updateComponent]);
-
         // Se tiver 'component.width' > 0, fica fixa
         // Senão, flex: 1 1 0 => ocupa espaço restante
         const hasFixedWidth = component.width && component.width > 0;
         const style: React.CSSProperties = hasFixedWidth
             ? {
-                width: component.width,
+                width: component.width!,
                 minWidth: 50,
                 flex: '0 0 auto',
             }
@@ -136,7 +136,7 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
                 <div
                     onMouseDown={startResize}
                     className="absolute top-0 right-0 h-full w-2 cursor-col-resize"
-                    style={{ zIndex: 10 }}
+                    style={{ zIndex: 1 }}
                 />
 
                 {/* Se quiser também permitir input de largura manual */}
@@ -212,7 +212,7 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
                 <input type="file" onChange={handleImageChange} />
                 {component.content && (
                     <div className="mt-2">
-                        <img
+                        <Image
                             src={component.content}
                             alt="Uploaded"
                             style={{
@@ -221,6 +221,9 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
                                 maxWidth: '100%', // Impede que a imagem ultrapasse os limites do pai
                                 maxHeight: '100vh', // Opcional: limite de altura
                             }}
+                            width={component.width || 300}
+                            height={component.height || 300}
+                            layout="intrinsic"
                             className="rounded"
                         />
                         {/* Inputs para redimensionar a imagem */}

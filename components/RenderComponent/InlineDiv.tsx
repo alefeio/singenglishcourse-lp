@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import React, { useRef, useState, useEffect } from 'react';
 import DroppableArea from '@/components/DroppableArea';
@@ -167,12 +167,6 @@ const InlineDiv: React.FC<InlineDivProps> = ({
 
       {menuOpen && (
         <div className="absolute top-8 right-0 bg-white border border-gray-300 rounded shadow-lg z-30">
-          <button
-            onClick={handleDuplicate}
-            className="block w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            Duplicar
-          </button>
           <button
             onClick={() => deleteComponent(component.id)}
             className="block w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100"

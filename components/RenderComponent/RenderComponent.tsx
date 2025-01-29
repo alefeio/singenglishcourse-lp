@@ -1,4 +1,5 @@
-'use client';
+'use client'
+
 import React from 'react';
 import { COMPONENT_TYPES, IComponent } from '@/components/DragAndDrop/types';
 
@@ -6,10 +7,17 @@ import InlineDiv from '@/components/RenderComponent/InlineDiv';
 import FullDiv from '@/components/RenderComponent/FullDiv';
 import TextComponent from '@/components/RenderComponent/TextComponent';
 import ImageComponent from '@/components/RenderComponent/ImageComponent';
+import ButtonComponent from './ButtonComponent';
+import FormComponent from './FormComponent';
 
 interface RenderComponentProps {
   component: IComponent;
-  onDrop: (...args: any) => void;
+  onDrop: (
+    type: COMPONENT_TYPES,
+    parentId?: string | null,
+    parentSubId?: string | null,
+    extraChildren?: IComponent | null
+  ) => void;
   updateComponent: (id: string, updated: IComponent) => void;
   deleteComponent: (id: string) => void;
   addComponent: (newComponent: IComponent, parentId: string | null) => void; // Atualiza para aceitar parentId
@@ -72,6 +80,22 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
     case COMPONENT_TYPES.IMAGE:
       return (
         <ImageComponent
+          component={component}
+          updateComponent={updateComponent}
+          deleteComponent={deleteComponent}
+        />
+      );
+    case COMPONENT_TYPES.BUTTON:
+      return (
+        <ButtonComponent
+          component={component}
+          updateComponent={updateComponent}
+          deleteComponent={deleteComponent}
+        />
+      );
+    case COMPONENT_TYPES.FORM:
+      return (
+        <FormComponent
           component={component}
           updateComponent={updateComponent}
           deleteComponent={deleteComponent}

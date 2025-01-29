@@ -5,6 +5,7 @@ export enum COMPONENT_TYPES {
   TEXT = 'text',
   IMAGE = 'image',
   BUTTON = 'button',
+  FORM = 'form',
 }
 
 export interface IComponent {
@@ -14,18 +15,32 @@ export interface IComponent {
   parentSubId?: string | null;
   children?: IComponent[] | null;
 
-  width?: number;
-  height?: number;
+  width?: number | null;
+  height?: number | null;
 
-  backgroundColor?: string;
-  padding?: string;
-  margin?: string;
-  borderRadius?: string;
+  backgroundColor?: string | null;
+  padding?: number | null;
+  margin?: number | null;
+  borderRadius?: number | null;
 
-  borderWidth?: number;
-  borderColor?: string;
-  position?: string;
+  borderWidth?: number | null;
+  borderColor?: string | null;
+  position?: string | null;
 
-  textColor?: string;
-  fontSize?: string;
+  textColor?: string | null;
+  fontSize?: string | null;
+
+  buttonColor?: string | null;
+  buttonTextColor?: string | null;
+  buttonText?: string | null;
+
+  fieldType?: string | null;
+  name?: string | null;
+
+  textAlign?: string | null;
+  fontFamily?: string | null;
+
+  parentId?: string;
+
+  text?: string;
 }
