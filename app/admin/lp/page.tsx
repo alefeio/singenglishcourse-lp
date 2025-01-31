@@ -18,12 +18,6 @@ const LandingPageBuilder: React.FC = () => {
     const [message, setMessage] = useState('');
     const [isSticky, setIsSticky] = useState(false);
     const [pageWidth, setPageWidth] = useState('1280px');
-    const [isClient, setIsClient] = useState(false); // 🔹 Flag para detectar o ambiente do cliente
-
-    // ✅ Garante que o código só rode no cliente
-    useEffect(() => {
-        setIsClient(true);
-    }, []);
 
     // Busca configurações da coleção
     useEffect(() => {
@@ -41,22 +35,19 @@ const LandingPageBuilder: React.FC = () => {
         fetchConfigurations();
     }, []);
 
-    // ✅ Previna erro ao acessar `window`
+    // Prevenir erro ao acessar `window`
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const handleScroll = () => {
-                setIsSticky(window.scrollY > 300);
-            };
+        if (typeof window === 'undefined') return;
 
-            window.addEventListener('scroll', handleScroll);
-            return () => {
-                window.removeEventListener('scroll', handleScroll);
-            };
-        }
+        const handleScroll = () => {
+            setIsSticky(window.scrollY > 300);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
     }, []);
-
-    // Se ainda estiver no servidor, retorna null para evitar erro de prerenderização
-    if (!isClient) return null;
 
     // Função para criar URL a partir do nome da página
     const handlePageNameChange = (name: string) => {
@@ -227,9 +218,17 @@ const LandingPageBuilder: React.FC = () => {
 
                 {/* Área de construção */}
                 <section className="flex-1 bg-white shadow-md p-6 rounded mt-6">
+                    <h3 className="text-xl font-bold mb-4 text-center">Área de Construção</h3>
                     <DroppableArea onDrop={handleDrop} isMainArea>
                         {components.map((comp) => (
-                            <RenderComponent key={comp.id} component={comp} onDrop={handleDrop} updateComponent={updateComponent} deleteComponent={deleteComponent} />
+                            <RenderComponent
+                                key={comp.id}
+                                component={comp}
+                                parentId={null}
+                                onDrop={handleDrop}
+                                updateComponent={updateComponent}
+                                deleteComponent={deleteComponent}
+                            />
                         ))}
                     </DroppableArea>
                 </section>
