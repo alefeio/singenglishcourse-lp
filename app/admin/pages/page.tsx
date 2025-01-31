@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { IComponent } from '@/components/DragAndDrop/types';
 
 interface IPage {
   id: string;
   name: string;
   url: string;
-  content: any;
+  content: IComponent[];
 }
 
 export default function PagesAdmin() {

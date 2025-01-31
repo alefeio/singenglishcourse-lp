@@ -9,7 +9,6 @@ interface FormData {
 
 export function parseMultipartFormData(buffer: Buffer, boundary: string, formData: FormData) {
     const boundaryBuffer = Buffer.from(`--${boundary}`, 'utf-8');
-    const boundaryEndBuffer = Buffer.from(`--${boundary}--`, 'utf-8');
     let startIndex = 0;
 
     while (startIndex < buffer.length) {
@@ -32,7 +31,6 @@ export function parseMultipartFormData(buffer: Buffer, boundary: string, formDat
 
         const nameMatch = headers.match(/name="([^"]+)"/);
         const filenameMatch = headers.match(/filename="([^"]+)"/);
-        const contentTypeMatch = headers.match(/Content-Type: ([^;]+)/);
 
         if (nameMatch) {
             const name = nameMatch[1];

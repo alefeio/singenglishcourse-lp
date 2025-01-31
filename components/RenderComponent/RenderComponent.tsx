@@ -20,7 +20,6 @@ interface RenderComponentProps {
   ) => void;
   updateComponent: (id: string, updated: IComponent) => void;
   deleteComponent: (id: string) => void;
-  addComponent: (newComponent: IComponent, parentId: string | null) => void; // Atualiza para aceitar parentId
   parentId?: string | null; // parentId é opcional aqui
 }
 
@@ -30,22 +29,7 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
   onDrop,
   updateComponent,
   deleteComponent,
-  addComponent,
 }) => {
-  const handleDuplicate = () => {
-    const duplicatedComponent: IComponent = {
-      ...component,
-      id: Math.random().toString(36).substring(2, 9), // Gera novo ID para o componente
-      children: component.children
-        ? component.children.map((child) => ({
-          ...child,
-          id: Math.random().toString(36).substring(2, 9), // Novo ID para cada filho
-        }))
-        : [],
-    };
-
-    addComponent(duplicatedComponent, parentId || null); // Passa o parentId
-  };
 
   switch (component.type) {
     case COMPONENT_TYPES.DIV_INLINE:
@@ -55,7 +39,6 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
           onDrop={onDrop}
           updateComponent={updateComponent}
           deleteComponent={deleteComponent}
-          addComponent={addComponent} // Adicione esta linha
           parentId={parentId || null}
         />
       );
@@ -66,7 +49,6 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
           onDrop={onDrop}
           updateComponent={updateComponent}
           deleteComponent={deleteComponent}
-          duplicateComponent={handleDuplicate} // Usa a função handleDuplicate
         />
       );
     case COMPONENT_TYPES.TEXT:

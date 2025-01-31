@@ -1,6 +1,7 @@
 'use client';
 
 import Carousel from '@/components/Carousel';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 interface IComponent {
@@ -36,6 +37,8 @@ interface IComponent {
   borderColor?: string;
   buttonColor?: string;
   buttonTextColor?: string;
+  placeholder?: string;
+  required?: boolean;
 }
 
 export default function LandingPage() {
@@ -150,48 +153,46 @@ export default function LandingPage() {
         children,
         fieldType,
         name,
-        buttonText,
+        placeholder,
+        required,
       } = component;
 
       // 🔹 Renderiza Formulário
       if (type === 'form' && children) {
         return (
-          <div style={{ scrollBehavior: 'smooth' }}>
-            <a id="matricula">
-              <form
-                key={id}
-                className="shadow-md rounded-lg p-6 mx-auto"
+          <div id="matricula" key={component.id}>
+            <form
+              className="shadow-md rounded-lg p-6 mx-auto"
+              style={{
+                width: width ? `${width}px` : '600px',
+                padding: component.padding || '10px',
+                borderRadius: component.borderRadius || '5px',
+                backgroundColor: backgroundColor || 'rgba(241, 236, 236, 1)',
+                border: component.borderWidth ? `${component.borderWidth}px solid ${component.borderColor || '#ccc'}` : 'none',
+              }}
+              onSubmit={(e) => handleSubmit(e, content || 'Formulário')} // Chamando handleSubmit no submit do form
+            >
+              <h2 className="text-xl font-bold mb-4 text-center">{content || 'Formulário'}</h2>
+
+              {/* Renderiza os campos do formulário */}
+              {children.map((field) => renderComponents([field]))}
+
+              <button
+                type="submit"
+                className="w-full py-3 mt-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                disabled={isSubmitting}
                 style={{
-                  width: width ? `${width}px` : '600px',
-                  padding: component.padding || '10px',
-                  borderRadius: component.borderRadius || '5px',
-                  backgroundColor: backgroundColor || 'rgba(241, 236, 236, 1)',
-                  border: component.borderWidth ? `${component.borderWidth}px solid ${component.borderColor || '#ccc'}` : 'none',
+                  backgroundColor: component.buttonColor || '#007BFF',
+                  color: component.buttonTextColor || '#FFF',
+                  padding: '10px',
+                  borderRadius: '5px',
                 }}
-                onSubmit={(e) => handleSubmit(e, content || 'Formulário')} // Chamando handleSubmit no submit do form
               >
-                <h2 className="text-xl font-bold mb-4 text-center">{content || 'Formulário'}</h2>
+                {isSubmitting ? 'Enviando...' : component.buttonText || 'Enviar'}
+              </button>
 
-                {/* Renderiza os campos do formulário */}
-                {children.map((field) => renderComponents([field]))}
-
-                <button
-                  type="submit"
-                  className="w-full py-3 mt-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                  disabled={isSubmitting}
-                  style={{
-                    backgroundColor: component.buttonColor || '#007BFF',
-                    color: component.buttonTextColor || '#FFF',
-                    padding: '10px',
-                    borderRadius: '5px',
-                  }}
-                >
-                  {isSubmitting ? 'Enviando...' : component.buttonText || 'Enviar'}
-                </button>
-
-                {message && <p className="mt-2 text-center text-gray-600">{message}</p>}
-              </form>
-            </a>
+              {message && <p className="mt-2 text-center text-gray-600">{message}</p>}
+            </form>
           </div>
         );
       }
@@ -208,6 +209,8 @@ export default function LandingPage() {
                 id={name}
                 name={name}
                 rows={4}
+                placeholder={placeholder}
+                required={required}
                 value={formData[name || ''] || ''}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -217,6 +220,8 @@ export default function LandingPage() {
                 id={name}
                 name={name}
                 type={fieldType}
+                placeholder={placeholder}
+                required={required}
                 value={formData[name || ''] || ''}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -255,7 +260,7 @@ export default function LandingPage() {
         fontFamily,
         fontSize,
         color: textColor,
-        textAlign,
+        textAlign: textAlign as React.CSSProperties['textAlign'] || 'left',
         width: width ? `${width}px` : 'auto',
         height: height ? `${height}px` : 'auto',
         overflow: 'hidden',
@@ -328,7 +333,7 @@ export default function LandingPage() {
 
         return (
           <div key={id} style={imageContainerStyles}>
-            <img src={content} alt="Imagem" style={imageStyles} />
+            <Image src={content} alt="Imagem" style={imageStyles} />
           </div>
         );
       }

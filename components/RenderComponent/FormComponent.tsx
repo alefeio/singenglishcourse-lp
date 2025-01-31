@@ -13,6 +13,8 @@ interface FormComponentProps {
 const FormComponent: React.FC<FormComponentProps> = ({ component, updateComponent, deleteComponent }) => {
     const [newFieldLabel, setNewFieldLabel] = useState('');
     const [newFieldType, setNewFieldType] = useState('text');
+    const [newFieldPlaceholder, setNewFieldPlaceholder] = useState('');
+    const [newFieldRequired, setNewFieldRequired] = useState(false);
     const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -27,10 +29,12 @@ const FormComponent: React.FC<FormComponentProps> = ({ component, updateComponen
 
         const newField: IComponent = {
             id: Math.random().toString(36).substring(2, 9),
-            type: COMPONENT_TYPES.TEXT, // Apenas um identificador genérico
+            type: COMPONENT_TYPES.TEXT,
             content: newFieldLabel,
-            fieldType: newFieldType, // Armazena o tipo do campo
-            name: generateFieldName(newFieldLabel), // Gera o atributo `name`
+            fieldType: newFieldType,
+            name: generateFieldName(newFieldLabel),
+            placeholder: newFieldPlaceholder, // Adicionando Placeholder
+            required: newFieldRequired, // Adicionando Required
         };
 
         updateComponent(component.id, {
@@ -39,6 +43,8 @@ const FormComponent: React.FC<FormComponentProps> = ({ component, updateComponen
         });
 
         setNewFieldLabel('');
+        setNewFieldPlaceholder('');
+        setNewFieldRequired(false);
     };
 
     return (
@@ -48,7 +54,7 @@ const FormComponent: React.FC<FormComponentProps> = ({ component, updateComponen
                 padding: component.padding || '10px',
                 borderRadius: component.borderRadius || '5px',
                 border: component.borderWidth ? `${component.borderWidth}px solid ${component.borderColor || '#ccc'}` : 'none',
-                width: component.width ? `${component.width}px` : '100%', // Define a largura do formulário
+                width: component.width ? `${component.width}px` : '100%',
             }}
             className="p-4 border border-gray-300 rounded bg-white shadow relative"
         >
@@ -89,9 +95,20 @@ const FormComponent: React.FC<FormComponentProps> = ({ component, updateComponen
                     <label key={field.id} className="block mb-2">
                         {field.content}:
                         {field.fieldType === 'textarea' ? (
-                            <textarea name={field.name} className="border border-gray-300 p-1 w-full rounded" />
+                            <textarea
+                                name={field.name ?? ''}
+                                placeholder={field.placeholder ?? ''}
+                                required={!!field.required}
+                                className="border border-gray-300 p-1 w-full rounded"
+                            />
                         ) : (
-                            <input type={field.fieldType} name={field.name} className="border border-gray-300 p-1 w-full rounded" />
+                            <input
+                                type={field.fieldType ?? 'text'}
+                                name={field.name ?? ''}
+                                placeholder={field.placeholder ?? ''}
+                                required={!!field.required}
+                                className="border border-gray-300 p-1 w-full rounded"
+                            />
                         )}
                     </label>
                 ))}
@@ -120,6 +137,21 @@ const FormComponent: React.FC<FormComponentProps> = ({ component, updateComponen
                     onChange={(e) => setNewFieldLabel(e.target.value)}
                     className="border border-gray-300 p-1 w-full rounded mb-2"
                 />
+                <input
+                    type="text"
+                    placeholder="Placeholder (Opcional)"
+                    value={newFieldPlaceholder}
+                    onChange={(e) => setNewFieldPlaceholder(e.target.value)}
+                    className="border border-gray-300 p-1 w-full rounded mb-2"
+                />
+                <label className="flex items-center gap-2 mb-2">
+                    <input
+                        type="checkbox"
+                        checked={newFieldRequired}
+                        onChange={(e) => setNewFieldRequired(e.target.checked)}
+                    />
+                    Campo obrigatório
+                </label>
                 <select
                     value={newFieldType}
                     onChange={(e) => setNewFieldType(e.target.value)}

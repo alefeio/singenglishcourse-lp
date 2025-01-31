@@ -5,9 +5,9 @@ import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { COMPONENT_TYPES, IComponent } from '@/components/DragAndDrop/types';
-import DraggableComponent from '@/components/DraggableComponent';
 import DroppableArea from '@/components/DroppableArea';
 import RenderComponent from '@/components/RenderComponent/RenderComponent';
+import Componentes from '@/components/Componentes';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -17,16 +17,22 @@ const LandingPageBuilder: React.FC = () => {
     const [pageUrl, setPageUrl] = useState('');
     const [message, setMessage] = useState('');
     const [isSticky, setIsSticky] = useState(false);
-    const [pageWidth, setPageWidth] = useState('1280px'); // Estado para armazenar a largura máxima da página
+    const [pageWidth, setPageWidth] = useState('1280px');
+    const [isClient, setIsClient] = useState(false); // 🔹 Flag para detectar o ambiente do cliente
 
-    // Busca configurações na coleção
+    // ✅ Garante que o código só rode no cliente
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    // Busca configurações da coleção
     useEffect(() => {
         const fetchConfigurations = async () => {
             try {
                 const res = await fetch('/api/configurations', { method: 'GET' });
                 if (!res.ok) throw new Error('Erro ao carregar configurações');
                 const data = await res.json();
-                setPageWidth(data.pageWidth || '1280px'); // Define a largura máxima
+                setPageWidth(data.pageWidth || '1280px');
             } catch (error) {
                 console.error('Erro ao carregar configurações:', error);
             }
@@ -35,18 +41,24 @@ const LandingPageBuilder: React.FC = () => {
         fetchConfigurations();
     }, []);
 
-    // Handle sticky position for the Component bar
+    // ✅ Previna erro ao acessar `window`
     useEffect(() => {
-        const handleScroll = () => {
-            const scrollTop = window.scrollY;
-            setIsSticky(scrollTop > 300);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-        };
+        if (typeof window !== 'undefined') {
+            const handleScroll = () => {
+                setIsSticky(window.scrollY > 300);
+            };
+
+            window.addEventListener('scroll', handleScroll);
+            return () => {
+                window.removeEventListener('scroll', handleScroll);
+            };
+        }
     }, []);
 
+    // Se ainda estiver no servidor, retorna null para evitar erro de prerenderização
+    if (!isClient) return null;
+
+    // Função para criar URL a partir do nome da página
     const handlePageNameChange = (name: string) => {
         setPageName(name);
         const formattedUrl = name
@@ -62,6 +74,7 @@ const LandingPageBuilder: React.FC = () => {
         setPageUrl(url);
     };
 
+    // Função para adicionar componentes à página
     const handleDrop = (
         type: COMPONENT_TYPES,
         parentId: string | null = null,
@@ -107,32 +120,7 @@ const LandingPageBuilder: React.FC = () => {
         });
     };
 
-    const addComponent = (newComponent: IComponent, parentId: string | null) => {
-        if (!parentId) {
-            setComponents((prev) => [...prev, newComponent]);
-            return;
-        }
-
-        const addRecursively = (list: IComponent[]): IComponent[] =>
-            list.map((comp) => {
-                if (comp.id === parentId) {
-                    return {
-                        ...comp,
-                        children: [...(comp.children || []), newComponent],
-                    };
-                }
-                if (comp.children) {
-                    return {
-                        ...comp,
-                        children: addRecursively(comp.children),
-                    };
-                }
-                return comp;
-            });
-
-        setComponents((prev) => addRecursively(prev));
-    };
-
+    // Atualiza um componente existente
     const updateComponent = (id: string, updated: IComponent) => {
         const updateRecursively = (list: IComponent[]): IComponent[] =>
             list.map((comp) => {
@@ -148,6 +136,7 @@ const LandingPageBuilder: React.FC = () => {
         setComponents((prev) => updateRecursively(prev));
     };
 
+    // Remove um componente da página
     const deleteComponent = (id: string) => {
         const removeRecursively = (list: IComponent[]): IComponent[] => {
             return list
@@ -160,6 +149,7 @@ const LandingPageBuilder: React.FC = () => {
         setComponents((prev) => removeRecursively(prev));
     };
 
+    // Salva a página no banco de dados
     const handleSavePage = async () => {
         if (!pageName || !pageUrl || components.length === 0) {
             setMessage('Preencha todos os campos e adicione componentes antes de salvar.');
@@ -198,7 +188,7 @@ const LandingPageBuilder: React.FC = () => {
     return (
         <DndProvider backend={HTML5Backend}>
             <div className="p-4 bg-white rounded shadow mx-auto" style={{ maxWidth: pageWidth }}>
-                {/* Dados da Página */}
+                {/* Seção de informações da página */}
                 <section className="p-4 border border-gray-300 rounded bg-white shadow mb-6">
                     <h3 className="text-xl font-bold mb-4 text-center">Dados da Página</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -232,38 +222,14 @@ const LandingPageBuilder: React.FC = () => {
                     {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
                 </section>
 
-                {/* Componentes */}
-                <div
-                    className={`bg-white shadow-md p-4 rounded ${
-                        isSticky ? 'fixed top-0 left-0 w-full z-10' : 'relative'
-                    }`}
-                >
-                    <div className="flex gap-4 justify-center">
-                        <DraggableComponent type={COMPONENT_TYPES.DIV_INLINE}>
-                            Div (Em Linha)
-                        </DraggableComponent>
-                        <DraggableComponent type={COMPONENT_TYPES.DIV_FULL}>
-                            Div (Linha Única)
-                        </DraggableComponent>
-                        <DraggableComponent type={COMPONENT_TYPES.TEXT}>Texto</DraggableComponent>
-                        <DraggableComponent type={COMPONENT_TYPES.IMAGE}>Imagem</DraggableComponent>
-                    </div>
-                </div>
+                {/* Componentes disponíveis */}
+                <Componentes isSticky={isSticky} handleSavePage={handleSavePage} message={message} />
 
-                {/* Área de Construção */}
+                {/* Área de construção */}
                 <section className="flex-1 bg-white shadow-md p-6 rounded mt-6">
-                    <h3 className="text-xl font-bold mb-4 text-center">Área de Construção</h3>
                     <DroppableArea onDrop={handleDrop} isMainArea>
                         {components.map((comp) => (
-                            <RenderComponent
-                                key={comp.id}
-                                component={comp}
-                                parentId={null}
-                                onDrop={handleDrop}
-                                updateComponent={updateComponent}
-                                deleteComponent={deleteComponent}
-                                addComponent={addComponent}
-                            />
+                            <RenderComponent key={comp.id} component={comp} onDrop={handleDrop} updateComponent={updateComponent} deleteComponent={deleteComponent} />
                         ))}
                     </DroppableArea>
                 </section>

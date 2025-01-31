@@ -8,21 +8,52 @@ import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Estado para verificar se o usuário está logado
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [logoUrl, setLogoUrl] = useState('/images/logo.png'); // Fallback padrão
+  const [menuLinks, setMenuLinks] = useState<{ name: string; url: string }[]>([]);
+  const [highlightName, setHighlightName] = useState('');
+  const [highlightUrl, setHighlightUrl] = useState('#matricula');
+  const [highlightBgColor, setHighlightBgColor] = useState('#ea428e');
+  const [highlightTextColor, setHighlightTextColor] = useState('#ffffff');
+
   const router = useRouter();
 
-  // Simula a verificação de login (substitua com sua lógica real)
+  // Verifica autenticação do usuário
   useEffect(() => {
-    // Aqui você pode verificar o estado de autenticação, como um token no localStorage ou contexto
-    const token = localStorage.getItem('authToken'); // Substitua pela lógica real
-    setIsLoggedIn(!!token); // Define o estado com base no token
+    const token = localStorage.getItem('authToken');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  // Carrega configurações (logomarca e menu)
+  useEffect(() => {
+    const fetchConfigurations = async () => {
+      try {
+        const res = await fetch('/api/configurations');
+        if (!res.ok) throw new Error('Erro ao buscar configurações');
+
+        const data = await res.json();
+
+        console.log('data', data)
+
+        if (data.logoUrl) setLogoUrl(data.logoUrl);
+        if (data.menuLinks) setMenuLinks(data.menuLinks);
+
+        setHighlightName(data.highlightName);
+        setHighlightUrl(data.highlightUrl || '#matricula');
+        setHighlightBgColor(data.highlightBgColor || '#ea428e');
+        setHighlightTextColor(data.highlightTextColor || '#ffffff');
+      } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+      }
+    };
+
+    fetchConfigurations();
   }, []);
 
   const handleLogout = () => {
-    // Lógica para deslogar o usuário
-    localStorage.removeItem('authToken'); // Substitua pelo seu método de logout
+    localStorage.removeItem('authToken');
     setIsLoggedIn(false);
-    router.push('/login'); // Redireciona para a página de login
+    router.push('/login');
   };
 
   const toggleMobileMenu = () => {
@@ -32,42 +63,43 @@ export default function Header() {
   return (
     <header className="bg-white shadow-md">
       <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
+        {/* Logo dinâmico */}
         <div className="flex items-center gap-2">
-          <Image
-            src="/images/logo.png"
-            alt="Logo"
-            width={120}
-            height={40}
-            className="object-contain"
-          />
+          <Link
+            href='/'
+          >
+            <Image
+              src={logoUrl}
+              alt="Logo"
+              width={120}
+              height={40}
+              className="object-contain"
+            />
+          </Link>
         </div>
 
-        {/* Menu para desktop */}
+        {/* Menu Desktop dinâmico */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-semibold">
-          <Link href="#features" scroll={false} className="hover:text-blue-600">
-            Recursos
-          </Link>
-          <Link href="#pricing" scroll={false} className="hover:text-blue-600">
-            Preços
-          </Link>
-          <Link href="#testimonials" scroll={false} className="hover:text-blue-600">
-            Depoimentos
-          </Link>
+          {menuLinks.length > 0 && (
+            menuLinks.map((link, index) => (
+              <Link key={index} href={link.url} scroll={false} className="hover:text-blue-600">
+                {link.name}
+              </Link>
+            ))
+          )}
         </nav>
 
-        {/* Botão CTA para desktop */}
-        {/* <Link
-          href="#cta-final"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold hidden md:inline-block"
-        > */}
+        {/* Botão CTA fixo */}
         <a
-          href="#matricula"
-          className="bg-[#ea428e] text-white px-4 py-2 rounded hover:bg-[#cb2570] text-sm font-semibold hidden md:inline-block"
+          href={highlightUrl}
+          className="px-4 py-2 rounded text-sm font-semibold hidden md:inline-block"
+          style={{
+            backgroundColor: highlightBgColor,
+            color: highlightTextColor,
+          }}
         >
-          Reserve sua Matrícula
+          {highlightName}
         </a>
-        {/* </Link> */}
 
         {/* Botão de menu hambúrguer para mobile */}
         <button
@@ -78,40 +110,32 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Menu Mobile */}
+      {/* Menu Mobile dinâmico */}
       {isMobileMenuOpen && (
         <nav className="md:hidden bg-white shadow-md p-4 space-y-4">
-          <Link
-            href="#features"
-            scroll={false}
-            className="block text-sm font-semibold hover:text-blue-600"
-            onClick={toggleMobileMenu}
+          {menuLinks.length > 0 && (
+            menuLinks.map((link, index) => (
+              <Link
+                key={index}
+                href={link.url}
+                scroll={false}
+                className="block text-sm font-semibold hover:text-blue-600"
+                onClick={toggleMobileMenu}
+              >
+                {link.name}
+              </Link>
+            ))
+          )}
+          <a
+            href={highlightUrl}
+            className="px-4 py-2 rounded text-sm font-semibold block text-center"
+            style={{
+              backgroundColor: highlightBgColor,
+              color: highlightTextColor,
+            }}
           >
-            Recursos
-          </Link>
-          <Link
-            href="#pricing"
-            scroll={false}
-            className="block text-sm font-semibold hover:text-blue-600"
-            onClick={toggleMobileMenu}
-          >
-            Preços
-          </Link>
-          <Link
-            href="#testimonials"
-            scroll={false}
-            className="block text-sm font-semibold hover:text-blue-600"
-            onClick={toggleMobileMenu}
-          >
-            Depoimentos
-          </Link>
-          <Link
-            href="#cta-final"
-            className="block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-semibold"
-            onClick={toggleMobileMenu}
-          >
-            Fale Conosco
-          </Link>
+            {highlightName}
+          </a>
           {isLoggedIn && (
             <button
               onClick={handleLogout}

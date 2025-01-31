@@ -72,14 +72,9 @@ export async function PATCH(req: NextRequest) {
             console.log('Novo nome do arquivo:', newFileName);
             console.log('Novo caminho do arquivo:', newFilePath);
 
-            // Garantir que o conteúdo da imagem seja um buffer
-            const fileContent = Buffer.from(file.content, 'binary'); // Transformar o conteúdo em um buffer
-            if (!Buffer.isBuffer(fileContent)) {
-                console.error('O conteúdo do arquivo não é um buffer!');
-                return NextResponse.json({ error: 'Conteúdo da imagem inválido' }, { status: 400 });
-            }
+            // ✅ O conteúdo já é um Buffer, então não precisa de conversão
+            fs.writeFileSync(newFilePath, file.content);
 
-            fs.writeFileSync(newFilePath, fileContent); // Salva o arquivo binário diretamente
             newImageUrl = `/uploads/${newFileName}`; // Define a URL da nova imagem
             console.log(`Nova imagem salva: ${newFilePath}`);
         }

@@ -73,34 +73,19 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
     };
 
     // --------------------------- BUTTON ---------------------------
+    // --------------------------- BUTTON ---------------------------
     if (component.type === COMPONENT_TYPES.BUTTON) {
-        const {
-            content,
-            backgroundColor,
-            textColor,
-            fontSize,
-            padding,
-            borderRadius,
-            width,
-            height,
-        } = component;
         console.log('Rendering ButtonComponent:', component);
         return (
             <div key={component.id} className="mb-2">
                 <ButtonComponent
-                    text={content || 'Clique aqui'}
-                    backgroundColor={backgroundColor}
-                    textColor={textColor}
-                    fontSize={fontSize}
-                    padding={padding}
-                    borderRadius={borderRadius}
-                    width={width ? `${width}px` : undefined}
-                    height={height ? `${height}px` : undefined}
-                    onClick={() => alert('Botão clicado!')}
+                    component={component}  // ✅ Passando o objeto inteiro
+                    updateComponent={updateComponent}
+                    deleteComponent={() => console.log('Delete button')} // ✅ Ajuste conforme necessário
                 />
             </div>
         );
-    }    
+    }
 
     // --------------------------- DIV_INLINE ---------------------------
     if (component.type === COMPONENT_TYPES.DIV_INLINE) {

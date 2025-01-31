@@ -2,6 +2,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import { IComponent } from '@/components/DragAndDrop/types';
+import Image from 'next/image';
 
 interface ImageComponentProps {
     component: IComponent;
@@ -89,11 +90,11 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                 <>
                     <br />
                     <div className="mt-2 inline-block relative">
-                        <img
+                        <Image
                             src={component.content}
                             alt="Uploaded"
                             style={{
-                                width: component.width || 300,
+                                width: '100%',
                                 height: component.height || 'auto',
                                 maxWidth: '100%',
                                 borderRadius: component.borderRadius || 0, // Apply border-radius

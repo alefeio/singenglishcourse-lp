@@ -43,4 +43,26 @@ export interface IComponent {
   parentId?: string;
 
   text?: string;
+
+  paddingTop?: number;
+  paddingBottom?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
+  marginTop?: number;
+  marginBottom?: number;
+  marginLeft?: number;
+  marginRight?: number;
+
+  justifyContent?: string;
+  alignItems?: string;
+
+  top?: number | null;
+  bottom?: number | null;
+  left?: number | null;
+  right?: number | null;
+
+  align?: string;
+
+  placeholder?: string;
+  required?: boolean;
 }

@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const emailResponse = await resend.emails.send({
       from: 'singenglishcourse <onboarding@resend.dev>',
       to: 'alefeio@gmail.com',
-      subject: '📩 Nova Matrícula Efetuada',
+      subject: data.formTitle,
       html: emailContent,
     });
 

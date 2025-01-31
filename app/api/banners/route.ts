@@ -38,15 +38,9 @@ export async function POST(req: NextRequest) {
       console.log('Novo nome do arquivo:', newFileName);
       console.log('Novo caminho do arquivo:', newFilePath);
 
-      // Garantir que o conteúdo da imagem seja um buffer
-      const fileContent = Buffer.from(file.content, 'binary'); // Transformar o conteúdo em um buffer
-      if (!Buffer.isBuffer(fileContent)) {
-        console.error('O conteúdo do arquivo não é um buffer!');
-        return NextResponse.json({ error: 'Conteúdo da imagem inválido' }, { status: 400 });
-      }
+      // ✅ O conteúdo já é um Buffer, então não precisa de conversão
+      fs.writeFileSync(newFilePath, file.content);
 
-      // Salva o arquivo binário no sistema de arquivos
-      fs.writeFileSync(newFilePath, fileContent);
       imageUrl = `/uploads/${newFileName}`; // Define a URL da nova imagem
       console.log(`Nova imagem salva: ${newFilePath}`);
     }
@@ -83,4 +77,3 @@ export async function GET() {
     return NextResponse.json({ error: 'Erro ao buscar banners' }, { status: 500 });
   }
 }
-

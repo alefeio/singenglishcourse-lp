@@ -1,5 +1,5 @@
 'use client';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useRef, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import { COMPONENT_TYPES, IComponent } from './DragAndDrop/types';
 
@@ -14,15 +14,22 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
   children,
   generateChildren,
 }) => {
+  const ref = useRef<HTMLDivElement | null>(null);
+  
   const [, drag] = useDrag(() => ({
     type,
     item: { type, generateChildren },
   }));
 
-  console.log('Dragging component:', type);
+  // Aplica a função drag ao ref manualmente
+  useEffect(() => {
+    if (ref.current) {
+      drag(ref.current);
+    }
+  }, [drag]);
 
   return (
-    <div ref={drag} className="p-3 border border-gray-300 cursor-grab bg-gray-50">
+    <div ref={ref} className="p-3 border border-gray-300 cursor-grab bg-gray-50">
       {children}
     </div>
   );

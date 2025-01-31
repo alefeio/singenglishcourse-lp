@@ -4,14 +4,18 @@ import React, { useState } from 'react';
 import DroppableArea from '@/components/DroppableArea';
 import RenderComponent from '@/components/RenderComponent/RenderComponent';
 import ColorPickerButton from './ColorPickerButton';
-import { IComponent } from '@/components/DragAndDrop/types';
+import { COMPONENT_TYPES, IComponent } from '@/components/DragAndDrop/types';
 
 interface FullDivProps {
     component: IComponent;
-    onDrop: (...args: any) => void;
+    onDrop: (
+        type: COMPONENT_TYPES,
+        parentId?: string | null,
+        parentSubId?: string | null,
+        extraChildren?: IComponent | null
+    ) => void;
     updateComponent: (id: string, updated: IComponent) => void;
     deleteComponent: (id: string) => void;
-    duplicateComponent: (newComponent: IComponent, parentId: string | null) => void;
 }
 
 const FullDiv: React.FC<FullDivProps> = ({
@@ -19,7 +23,6 @@ const FullDiv: React.FC<FullDivProps> = ({
     onDrop,
     updateComponent,
     deleteComponent,
-    duplicateComponent,
 }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [isCustomizeModalOpen, setIsCustomizeModalOpen] = useState(false);
@@ -29,28 +32,6 @@ const FullDiv: React.FC<FullDivProps> = ({
         left: component.paddingLeft || 0,
         right: component.paddingRight || 0,
     });
-    const [marginValues, setMarginValues] = useState({
-        top: component.marginTop || 0,
-        bottom: component.marginBottom || 0,
-        left: component.marginLeft || 0,
-        right: component.marginRight || 0,
-    });
-
-    const handleDuplicate = () => {
-        const duplicatedComponent: IComponent = {
-            ...component,
-            id: Math.random().toString(36).substring(2, 9),
-            children: component.children
-                ? component.children.map((child) => ({
-                    ...child,
-                    id: Math.random().toString(36).substring(2, 9),
-                }))
-                : [],
-        };
-
-        duplicateComponent(duplicatedComponent, component.parentId || null);
-        setMenuOpen(false);
-    };
 
     const handleMenuToggle = () => setMenuOpen((prev) => !prev);
 
@@ -80,28 +61,6 @@ const FullDiv: React.FC<FullDivProps> = ({
         handleUpdate(updatedPadding);
     };
 
-    const handleMarginChange = (side: string, value: number) => {
-        const updatedMargin = { ...marginValues };
-
-        if (side === 'all') {
-            updatedMargin.top = value;
-            updatedMargin.bottom = value;
-            updatedMargin.left = value;
-            updatedMargin.right = value;
-        } else if (side === 'vertical') {
-            updatedMargin.top = value;
-            updatedMargin.bottom = value;
-        } else if (side === 'horizontal') {
-            updatedMargin.left = value;
-            updatedMargin.right = value;
-        } else {
-            updatedMargin[side as keyof typeof marginValues] = value;
-        }
-
-        setMarginValues(updatedMargin);
-        handleUpdate(updatedMargin);
-    };
-
     return (
         <div
             style={{
@@ -110,10 +69,6 @@ const FullDiv: React.FC<FullDivProps> = ({
                 paddingBottom: paddingValues.bottom,
                 paddingLeft: paddingValues.left,
                 paddingRight: paddingValues.right,
-                marginTop: marginValues.top,
-                marginBottom: marginValues.bottom,
-                marginLeft: marginValues.left,
-                marginRight: marginValues.right,
                 borderRadius: component.borderRadius ?? 0,
                 borderStyle: 'solid',
                 borderWidth: component.borderWidth ?? 1,
@@ -353,7 +308,6 @@ const FullDiv: React.FC<FullDivProps> = ({
                         onDrop={onDrop}
                         updateComponent={updateComponent}
                         deleteComponent={deleteComponent}
-                        addComponent={duplicateComponent}
                     />
                 ))}
             </DroppableArea>

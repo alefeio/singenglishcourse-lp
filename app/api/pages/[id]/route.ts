@@ -5,29 +5,43 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    try {
-        const pageRef = doc(db, 'paginas', params.id);
-        const pageSnap = await getDoc(pageRef);
-
-        if (!pageSnap.exists()) {
-            console.error('Página não encontrada:', params.id);
-            return NextResponse.json({ error: 'Página não encontrada' }, { status: 404 });
-        }
-        return NextResponse.json(pageSnap.data());
-    } catch (error) {
-        console.error('Erro ao buscar a página:', error);
-        return NextResponse.json({ error: 'Erro ao buscar a página' }, { status: 500 });
-    }
+interface ContentItem {
+  id?: string; // Opcional, se necessário
+  type: string;
+  content: string;
+  children?: ContentItem[]; // Recursividade para filhos
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+// 🔹 Corrigido: Extraindo o ID da URL diretamente no Next.js App Router
+export async function GET(req: NextRequest) {
   try {
+    const urlParts = req.nextUrl.pathname.split('/');
+    const id = urlParts[urlParts.length - 1]; // Último segmento da URL
+
+    const pageRef = doc(db, 'paginas', id);
+    const pageSnap = await getDoc(pageRef);
+
+    if (!pageSnap.exists()) {
+      console.error('Página não encontrada:', id);
+      return NextResponse.json({ error: 'Página não encontrada' }, { status: 404 });
+    }
+    return NextResponse.json(pageSnap.data());
+  } catch (error) {
+    console.error('Erro ao buscar a página:', error);
+    return NextResponse.json({ error: 'Erro ao buscar a página' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const urlParts = req.nextUrl.pathname.split('/');
+    const id = urlParts[urlParts.length - 1]; // Extraindo o ID da URL corretamente
+
     const body = await req.json();
-    const pageRef = doc(db, 'paginas', params.id);
+    const pageRef = doc(db, 'paginas', id);
 
     // Processar o campo 'content' para salvar as imagens localmente
-    const processContent = (content: any[]) => {
+    const processContent = (content: ContentItem[]): ContentItem[] => {
       return content.map((item) => {
         if (item.type === 'image' && item.content.startsWith('data:image')) {
           const base64Data = item.content.split(',')[1];
@@ -67,4 +81,3 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: 'Erro ao atualizar a página' }, { status: 500 });
   }
 }
-

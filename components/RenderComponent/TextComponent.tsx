@@ -14,7 +14,6 @@ interface TextComponentProps {
   component: IComponent;
   updateComponent: (id: string, updated: IComponent) => void;
   deleteComponent: (id: string) => void;
-  duplicateComponent?: (newComponent: IComponent, parentId: string | null) => void;
 }
 
 const TextComponent: React.FC<TextComponentProps> = ({
@@ -89,7 +88,7 @@ const TextComponent: React.FC<TextComponentProps> = ({
   }, [isResizing, resizeDirection, handleStyleUpdate]);
 
   const style: React.CSSProperties = {
-    textAlign: textAlign,
+    textAlign: textAlign as React.CSSProperties['textAlign'] || 'left',
     color: textColor,
     fontSize,
     fontFamily,

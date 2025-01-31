@@ -4,14 +4,18 @@ import React, { useRef, useState, useEffect } from 'react';
 import DroppableArea from '@/components/DroppableArea';
 import RenderComponent from '@/components/RenderComponent/RenderComponent';
 import ColorPickerButton from './ColorPickerButton';
-import { IComponent } from '@/components/DragAndDrop/types';
+import { COMPONENT_TYPES, IComponent } from '@/components/DragAndDrop/types';
 
 interface InlineDivProps {
   component: IComponent;
-  onDrop: (...args: any) => void;
+  onDrop: (
+    type: COMPONENT_TYPES,
+    parentId?: string | null,
+    parentSubId?: string | null,
+    extraChildren?: IComponent | null
+  ) => void;
   updateComponent: (id: string, updated: IComponent) => void;
   deleteComponent: (id: string) => void;
-  addComponent: (newComponent: IComponent, parentId: string | null) => void;
   parentId: string | null;
 }
 
@@ -20,8 +24,6 @@ const InlineDiv: React.FC<InlineDivProps> = ({
   onDrop,
   updateComponent,
   deleteComponent,
-  addComponent,
-  parentId,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isResizing, setIsResizing] = useState(false);
@@ -59,13 +61,13 @@ const InlineDiv: React.FC<InlineDivProps> = ({
           Math.max(50, e.clientX - rect.left), // Valor mínimo de 50px
           parentRect.width // Limite máximo: largura do elemento pai
         );
-        updateComponent(component.id, { width: newWidth });
+        updateComponent(component.id, { ...component, width: newWidth }); // ✅ Correção aqui
       } else if (resizeDirection === 'vertical') {
         const newHeight = Math.min(
           Math.max(50, e.clientY - rect.top), // Valor mínimo de 50px
-          parentRect.height // Limite máximo: altura do elemento pai (opcional)
+          parentRect.height // Limite máximo: altura do elemento pai
         );
-        updateComponent(component.id, { height: newHeight });
+        updateComponent(component.id, { ...component, height: newHeight }); // ✅ Correção aqui
       }
     };
 
@@ -84,19 +86,6 @@ const InlineDiv: React.FC<InlineDivProps> = ({
   }, [isResizing, resizeDirection, component, updateComponent]);
 
   const handleMenuToggle = () => setMenuOpen((prev) => !prev);
-
-  const handleDuplicate = () => {
-    const duplicatedComponent: IComponent = {
-      ...component,
-      id: Math.random().toString(36).substring(2, 9),
-      children: component.children?.map((child) => ({
-        ...child,
-        id: Math.random().toString(36).substring(2, 9),
-      })) || [],
-    };
-    addComponent(duplicatedComponent, parentId);
-    setMenuOpen(false);
-  };
 
   const handleUpdate = (props: Partial<IComponent>) => {
     updateComponent(component.id, { ...component, ...props });
@@ -327,7 +316,6 @@ const InlineDiv: React.FC<InlineDivProps> = ({
             onDrop={onDrop}
             updateComponent={updateComponent}
             deleteComponent={deleteComponent}
-            addComponent={addComponent}
           />
         ))}
       </DroppableArea>

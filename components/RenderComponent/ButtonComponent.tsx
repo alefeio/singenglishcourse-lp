@@ -1,21 +1,19 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { IComponent } from '@/components/DragAndDrop/types';
 import ColorPickerButton from './ColorPickerButton';
 
 interface ButtonComponentProps {
-  component: IComponent;
-  updateComponent: (id: string, updated: IComponent) => void;
+  component: IComponent; // ✅ Agora o componente é passado como um objeto
+  updateComponent: (id: string, updatedComponent: IComponent) => void;
   deleteComponent: (id: string) => void;
-  duplicateComponent?: (newComponent: IComponent, parentId: string | null) => void;
 }
 
 const ButtonComponent: React.FC<ButtonComponentProps> = ({
   component,
   updateComponent,
   deleteComponent,
-  duplicateComponent,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,16 +21,22 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
   const [isResizing, setIsResizing] = useState(false);
   const [resizeDirection, setResizeDirection] = useState<'horizontal' | 'vertical' | null>(null);
 
-  const handleStyleUpdate = (newStyles: Partial<IComponent>) => {
-    updateComponent(component.id, { ...component, ...newStyles });
-  };
-
   const startResize = (direction: 'horizontal' | 'vertical') => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setResizeDirection(direction);
     setIsResizing(true);
   };
+
+  const handleStyleUpdate = useCallback(
+    (newStyles: Partial<IComponent>) => {
+      updateComponent(component.id, {
+        ...component,
+        ...newStyles, // ✅ Aplica apenas as propriedades passadas sem sobrescrever outras
+      });
+    },
+    [updateComponent, component]
+  );
 
   useEffect(() => {
     if (!isResizing || !resizeDirection) return;
@@ -67,7 +71,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [isResizing, resizeDirection]);
+  }, [isResizing, resizeDirection, handleStyleUpdate]);
 
   const style: React.CSSProperties = {
     backgroundColor: component.backgroundColor || '#007BFF',
@@ -132,7 +136,7 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
               <input
                 type="text"
                 value={component.content}
-                onChange={(e) => handleStyleUpdate({ content: e.target.value })}
+                onChange={(e) => updateComponent(component.id, { ...component, content: e.target.value })}
                 className="w-full border border-gray-300 rounded p-1"
               />
             </label>
@@ -167,8 +171,8 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
               Padding:
               <input
                 type="number"
-                value={component.padding?.replace('px', '') || 10}
-                onChange={(e) => handleStyleUpdate({ padding: `${e.target.value}px` })}
+                value={component.padding || 10}
+                onChange={(e) => handleStyleUpdate({ padding: Number(e.target.value) })}
                 className="w-full border border-gray-300 rounded p-1"
               />
             </label>
@@ -177,8 +181,8 @@ const ButtonComponent: React.FC<ButtonComponentProps> = ({
               Border Radius:
               <input
                 type="number"
-                value={component.borderRadius?.replace('px', '') || 5}
-                onChange={(e) => handleStyleUpdate({ borderRadius: `${e.target.value}px` })}
+                value={component.borderRadius || 5}
+                onChange={(e) => handleStyleUpdate({ borderRadius: Number(e.target.value) })}
                 className="w-full border border-gray-300 rounded p-1"
               />
             </label>
