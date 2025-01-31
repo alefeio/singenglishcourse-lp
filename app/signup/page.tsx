@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebaseClient'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function SignupPage() {
     const router = useRouter()
@@ -116,9 +117,9 @@ export default function SignupPage() {
                     {/* Link para a página de login */}
                     <p className="text-center mt-4 text-sm text-gray-600">
                         Já tem uma conta?{' '}
-                        <a href="/login" className="text-blue-600 hover:underline">
+                        <Link href="/login" className="text-blue-600 hover:underline">
                             Entrar
-                        </a>
+                        </Link>
                     </p>
                 </div>
             </div>

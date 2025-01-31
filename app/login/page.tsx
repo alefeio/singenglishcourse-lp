@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebaseClient'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -84,9 +85,9 @@ export default function LoginPage() {
 
         <p className="text-center mt-4 text-sm text-gray-600">
           Não tem conta?{' '}
-          <a href="/signup" className="text-blue-600 hover:underline">
+          <Link href="/signup" className="text-blue-600 hover:underline">
             Cadastre-se
-          </a>
+          </Link>
         </p>
       </div>
     </main>
