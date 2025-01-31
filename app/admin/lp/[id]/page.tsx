@@ -13,8 +13,8 @@ import Componentes from '@/components/Componentes';
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
 const EditPage: React.FC = () => {
-    const params = useParams(); // ✅ useParams chamado corretamente
-    const id = params?.id as string; // Garantindo que `id` é sempre string
+    const params = useParams();
+    const id = params?.id as string;
 
     const [components, setComponents] = useState<IComponent[]>([]);
     const [pageName, setPageName] = useState('');
@@ -22,8 +22,14 @@ const EditPage: React.FC = () => {
     const [message, setMessage] = useState('');
     const [isSticky, setIsSticky] = useState(false);
     const [pageWidth, setPageWidth] = useState('1280px');
+    const [isClient, setIsClient] = useState(false); // 🔹 Flag para verificar se está no cliente
 
-    // Busca configurações globais da página
+    // ✅ Garante que o código só roda no cliente
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    // Busca configurações globais
     useEffect(() => {
         const fetchConfigurations = async () => {
             try {
@@ -39,9 +45,9 @@ const EditPage: React.FC = () => {
         fetchConfigurations();
     }, []);
 
-    // Previne erro no servidor ao acessar `window`
+    // ✅ Previna erro no servidor acessando `window`
     useEffect(() => {
-        if (typeof window === 'undefined') return;
+        if (!isClient) return;
 
         const handleScroll = () => {
             setIsSticky(window.scrollY > 300);
@@ -51,11 +57,10 @@ const EditPage: React.FC = () => {
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
-    }, []);
+    }, [isClient]);
 
-    // Função para buscar os detalhes da página a ser editada
     const fetchPageDetails = useCallback(async () => {
-        if (!id) return; // 🔴 Impede execução caso id seja `undefined`
+        if (!id) return;
 
         try {
             const res = await fetch(`/api/pages/${id}`);
@@ -75,10 +80,9 @@ const EditPage: React.FC = () => {
         fetchPageDetails();
     }, [fetchPageDetails]);
 
-    // Impede o erro de pré-renderização do Next.js
-    if (typeof window === 'undefined') return null;
+    // 🔹 Evita pré-renderização no servidor
+    if (!isClient) return null;
 
-    // Atualiza nome da página e gera URL amigável
     const handlePageNameChange = (name: string) => {
         setPageName(name);
         const formattedUrl = name
@@ -94,7 +98,6 @@ const EditPage: React.FC = () => {
         setPageUrl(url);
     };
 
-    // Adiciona novos componentes à página
     const handleDrop = (
         type: COMPONENT_TYPES,
         parentId: string | null = null,
@@ -112,20 +115,6 @@ const EditPage: React.FC = () => {
         if (type === COMPONENT_TYPES.IMAGE) {
             newComponent.width = 300;
             newComponent.height = 0;
-        }
-
-        if (type === COMPONENT_TYPES.BUTTON) {
-            newComponent.content = 'Clique aqui';
-            newComponent.backgroundColor = '#007BFF';
-            newComponent.textColor = '#FFFFFF';
-            newComponent.fontSize = '16px';
-            newComponent.padding = 10;
-            newComponent.borderRadius = 5;
-        }
-
-        if (type === COMPONENT_TYPES.FORM) {
-            newComponent.content = 'Novo Formulário';
-            newComponent.children = [];
         }
 
         if (!parentId) {
@@ -154,7 +143,6 @@ const EditPage: React.FC = () => {
         });
     };
 
-    // Atualiza um componente existente
     const updateComponent = (id: string, updated: IComponent) => {
         const updateRecursively = (list: IComponent[]): IComponent[] =>
             list.map((comp) => {
@@ -171,7 +159,6 @@ const EditPage: React.FC = () => {
         setComponents((prev) => updateRecursively(prev));
     };
 
-    // Remove um componente da página
     const deleteComponent = (id: string) => {
         const removeRecursively = (list: IComponent[]): IComponent[] => {
             return list
@@ -184,7 +171,6 @@ const EditPage: React.FC = () => {
         setComponents((prev) => removeRecursively(prev));
     };
 
-    // Salva a página editada no banco de dados
     const handleSavePage = async () => {
         if (!pageName || !pageUrl || components.length === 0) {
             setMessage('Preencha todos os campos e adicione componentes antes de salvar.');
@@ -215,7 +201,6 @@ const EditPage: React.FC = () => {
     return (
         <DndProvider backend={HTML5Backend}>
             <div className="rounded mx-auto" style={{ maxWidth: pageWidth }}>
-                {/* Dados da Página */}
                 <section className="p-4 border border-gray-300 rounded bg-white shadow mb-6">
                     <h3 className="text-xl font-bold mb-4 text-center">Editar Página</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
