@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     // Enviando e-mail de notificação
     const emailResponse = await resend.emails.send({
       from: 'singenglishcourse <onboarding@resend.dev>',
-      to: 'alefeio@gmail.com',
+      to: 'alefeio@gmail.com, singenglishcourse@gmail.com',
       subject: data.formTitle,
       html: emailContent,
     });
