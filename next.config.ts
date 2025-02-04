@@ -5,6 +5,16 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  images: {
+    domains: ["www.singenglishcourse.com.br"], // Adicione o domínio da imagem
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.singenglishcourse.com.br",
+        pathname: "/uploads/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;
