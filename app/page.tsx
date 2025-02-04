@@ -333,7 +333,7 @@ export default function LandingPage() {
 
         return (
           <div key={id} style={imageContainerStyles}>
-            <Image src={content} alt="Imagem" style={imageStyles} />
+            <Image src={content} width={100} height={100} alt="Imagem" style={imageStyles} />
           </div>
         );
       }

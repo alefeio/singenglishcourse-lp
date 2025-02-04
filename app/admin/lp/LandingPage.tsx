@@ -1,21 +1,17 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 
 import { COMPONENT_TYPES, IComponent } from '@/components/DragAndDrop/types';
 import DroppableArea from '@/components/DroppableArea';
 import RenderComponent from '@/components/RenderComponent/RenderComponent';
-import { useParams } from 'next/navigation';
 import Componentes from '@/components/Componentes';
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
-const EditPage: React.FC = () => {
-    const params = useParams(); // ✅ useParams chamado corretamente
-    const id = params?.id as string; // Garantindo que `id` é sempre string
-
+const LandingPageBuilder: React.FC = () => {
     const [components, setComponents] = useState<IComponent[]>([]);
     const [pageName, setPageName] = useState('');
     const [pageUrl, setPageUrl] = useState('');
@@ -23,7 +19,7 @@ const EditPage: React.FC = () => {
     const [isSticky, setIsSticky] = useState(false);
     const [pageWidth, setPageWidth] = useState('1280px');
 
-    // Busca configurações globais da página
+    // Busca configurações da coleção
     useEffect(() => {
         const fetchConfigurations = async () => {
             try {
@@ -39,46 +35,23 @@ const EditPage: React.FC = () => {
         fetchConfigurations();
     }, []);
 
-    // Previne erro no servidor ao acessar `window`
+    // Prevenir erro ao acessar `window`
     useEffect(() => {
-        console.log('setIsSticky', setIsSticky)
+        // if (typeof window === 'undefined') return;
 
-        if (typeof window === 'undefined') return;
+        console.log('setIsSticky', setIsSticky)
 
         const handleScroll = () => {
             setIsSticky(window.scrollY > 300);
         };
 
         window.addEventListener('scroll', handleScroll);
-
         return () => {
             window.removeEventListener('scroll', handleScroll);
         };
     }, []);
 
-    // Função para buscar os detalhes da página a ser editada
-    const fetchPageDetails = useCallback(async () => {
-        if (!id) return; // 🔴 Impede execução caso id seja `undefined`
-
-        try {
-            const res = await fetch(`/api/pages/${id}`);
-            if (!res.ok) throw new Error('Erro ao carregar os dados da página');
-            const data = await res.json();
-
-            setPageName(data.name);
-            setPageUrl(data.url);
-            setComponents(data.content || []);
-        } catch (error) {
-            console.error('Erro ao carregar dados da página:', error);
-            setMessage('Erro ao carregar dados da página.');
-        }
-    }, [id]);
-
-    useEffect(() => {
-        fetchPageDetails();
-    }, [fetchPageDetails]);
-
-    // Atualiza nome da página e gera URL amigável
+    // Função para criar URL a partir do nome da página
     const handlePageNameChange = (name: string) => {
         setPageName(name);
         const formattedUrl = name
@@ -94,7 +67,7 @@ const EditPage: React.FC = () => {
         setPageUrl(url);
     };
 
-    // Adiciona novos componentes à página
+    // Função para adicionar componentes à página
     const handleDrop = (
         type: COMPONENT_TYPES,
         parentId: string | null = null,
@@ -112,20 +85,6 @@ const EditPage: React.FC = () => {
         if (type === COMPONENT_TYPES.IMAGE) {
             newComponent.width = 300;
             newComponent.height = 0;
-        }
-
-        if (type === COMPONENT_TYPES.BUTTON) {
-            newComponent.content = 'Clique aqui';
-            newComponent.backgroundColor = '#007BFF';
-            newComponent.textColor = '#FFFFFF';
-            newComponent.fontSize = '16px';
-            newComponent.padding = 10;
-            newComponent.borderRadius = 5;
-        }
-
-        if (type === COMPONENT_TYPES.FORM) {
-            newComponent.content = 'Novo Formulário';
-            newComponent.children = [];
         }
 
         if (!parentId) {
@@ -167,7 +126,6 @@ const EditPage: React.FC = () => {
                 }
                 return comp;
             });
-
         setComponents((prev) => updateRecursively(prev));
     };
 
@@ -184,40 +142,48 @@ const EditPage: React.FC = () => {
         setComponents((prev) => removeRecursively(prev));
     };
 
-    // Salva a página editada no banco de dados
+    // Salva a página no banco de dados
     const handleSavePage = async () => {
         if (!pageName || !pageUrl || components.length === 0) {
             setMessage('Preencha todos os campos e adicione componentes antes de salvar.');
             return;
         }
 
+        const formData = new FormData();
+        formData.append('name', pageName);
+        formData.append('url', pageUrl);
+        formData.append('components', JSON.stringify(components));
+
         try {
-            const res = await fetch(`/api/pages/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: pageName,
-                    url: pageUrl,
-                    components,
-                }),
+            const res = await fetch('/api/pages', {
+                method: 'POST',
+                body: formData,
             });
-            if (!res.ok) throw new Error('Erro ao salvar a página');
+            if (!res.ok) {
+                throw new Error('Erro ao salvar a página');
+            }
+            const data = await res.json();
+            console.log('Página salva:', data);
+
             setMessage('Página salva com sucesso!');
             setTimeout(() => {
                 setMessage('');
             }, 3000);
+            setPageName('');
+            setPageUrl('');
+            setComponents([]);
         } catch (error) {
-            console.error('Erro ao salvar a página:', error);
+            console.error(error);
             setMessage('Erro ao salvar a página.');
         }
     };
 
     return (
         <DndProvider backend={HTML5Backend}>
-            <div className="rounded mx-auto" style={{ maxWidth: pageWidth }}>
-                {/* Dados da Página */}
+            <div className="p-4 bg-white rounded shadow mx-auto" style={{ maxWidth: pageWidth }}>
+                {/* Seção de informações da página */}
                 <section className="p-4 border border-gray-300 rounded bg-white shadow mb-6">
-                    <h3 className="text-xl font-bold mb-4 text-center">Editar Página</h3>
+                    <h3 className="text-xl font-bold mb-4 text-center">Dados da Página</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label className="flex flex-col">
                             Nome da Página:
@@ -226,6 +192,7 @@ const EditPage: React.FC = () => {
                                 value={pageName}
                                 onChange={(e) => handlePageNameChange(e.target.value)}
                                 className="border border-gray-300 rounded p-2"
+                                placeholder="Digite o nome da página"
                             />
                         </label>
                         <label className="flex flex-col">
@@ -235,25 +202,41 @@ const EditPage: React.FC = () => {
                                 value={pageUrl}
                                 onChange={(e) => handleUrlChange(e.target.value)}
                                 className="border border-gray-300 rounded p-2"
+                                placeholder="URL da página"
                             />
                         </label>
                     </div>
-                    <button onClick={handleSavePage} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">
-                        Salvar Alterações
+                    <button
+                        onClick={handleSavePage}
+                        className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                        Salvar Página
                     </button>
                     {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
                 </section>
 
+                {/* Componentes disponíveis */}
                 <Componentes isSticky={isSticky} handleSavePage={handleSavePage} message={message} />
 
-                <DroppableArea onDrop={handleDrop} isMainArea>
-                    {components.map((comp) => (
-                        <RenderComponent key={comp.id} component={comp} onDrop={handleDrop} updateComponent={updateComponent} deleteComponent={deleteComponent} />
-                    ))}
-                </DroppableArea>
+                {/* Área de construção */}
+                <section className="flex-1 bg-white shadow-md p-6 rounded mt-6">
+                    <h3 className="text-xl font-bold mb-4 text-center">Área de Construção</h3>
+                    <DroppableArea onDrop={handleDrop} isMainArea>
+                        {components.map((comp) => (
+                            <RenderComponent
+                                key={comp.id}
+                                component={comp}
+                                parentId={null}
+                                onDrop={handleDrop}
+                                updateComponent={updateComponent}
+                                deleteComponent={deleteComponent}
+                            />
+                        ))}
+                    </DroppableArea>
+                </section>
             </div>
         </DndProvider>
     );
 };
 
-export default EditPage;
+export default LandingPageBuilder;

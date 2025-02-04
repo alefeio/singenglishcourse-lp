@@ -92,6 +92,8 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                     <div className="mt-2 inline-block relative">
                         <Image
                             src={component.content}
+                            width={100}
+                            height={100}
                             alt="Uploaded"
                             style={{
                                 width: '100%',

@@ -53,17 +53,16 @@ export default function DynamicPage() {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
+        console.log('setIsMobile', setIsMobile)
+
+        setIsMobile(window.innerWidth <= 768);
+
+        const handleResize = () => {
             setIsMobile(window.innerWidth <= 768);
+        };
 
-            // Adiciona um listener para mudanças de tamanho da tela
-            const handleResize = () => {
-                setIsMobile(window.innerWidth <= 768);
-            };
-
-            window.addEventListener('resize', handleResize);
-            return () => window.removeEventListener('resize', handleResize);
-        }
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     useEffect(() => {
@@ -373,7 +372,7 @@ export default function DynamicPage() {
 
                 return (
                     <div key={id} style={imageContainerStyles}>
-                        <Image src={content} alt="Imagem" style={imageStyles} />
+                        <Image src={content} width={100} height={100} alt="Imagem" style={imageStyles} />
                     </div>
                 );
             }

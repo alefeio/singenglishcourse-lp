@@ -200,14 +200,14 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
                         <Image
                             src={component.content}
                             alt="Uploaded"
+                            width={component.width || 300}
+                            height={component.height || 300}
                             style={{
                                 width: component.width || 300,
                                 height: component.height || 'auto',
                                 maxWidth: '100%', // Impede que a imagem ultrapasse os limites do pai
                                 maxHeight: '100vh', // Opcional: limite de altura
                             }}
-                            width={component.width || 300}
-                            height={component.height || 300}
                             layout="intrinsic"
                             className="rounded"
                         />

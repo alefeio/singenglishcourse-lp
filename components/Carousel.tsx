@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebaseClient';
+import Link from 'next/link';
 
 export default function Carousel() {
     const [banners, setBanners] = useState<
@@ -71,9 +72,10 @@ export default function Carousel() {
                             <div className="relative w-full h-full">
                                 <Image
                                     src={banner.imageUrl}
+                                    width={100}
+                                    height={100}
                                     alt={`Banner ${banner.title}`}
-                                    fill
-                                    className="object-cover object-center"
+                                    className="w-full h-full object-cover object-center"
                                 />
                                 {/* Sobreposição de conteúdo */}
                                 <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center text-center p-6">
@@ -83,15 +85,14 @@ export default function Carousel() {
                                     <p className="text-lg text-gray-200 mb-6">
                                         {banner.subtitle}
                                     </p>
-                                    <a
+                                    <Link
                                         href={banner.ctaLink}
-                                        target="_blank"
                                         rel="noopener noreferrer"
                                         className="px-6 py-3 text-white font-semibold rounded"
                                         style={{ backgroundColor: banner.ctaColor }}
                                     >
                                         {banner.ctaText}
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         </SwiperSlide>
