@@ -8,6 +8,6 @@ const EditPageBuilder = dynamic(() => import("@/app/admin/lp/[id]/EditPage"), {
     ssr: false, // ❌ Impede a execução no servidor, evitando o erro com `window`
 });
 
-export default function LandingPage() {
+export default function EditPage() {
     return <EditPageBuilder />;
 }

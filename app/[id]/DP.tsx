@@ -7,6 +7,6 @@ const DynamicPageBuilder = dynamic(() => import("@/app/[id]/DynamicPage"), {
     ssr: false,
 });
 
-export default function LandingPage() {
+export default function DynamicPage() {
     return <DynamicPageBuilder />;
 }
