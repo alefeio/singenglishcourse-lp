@@ -23,6 +23,8 @@ export default function HeaderAdmin() {
           width={120}
           height={40}
           className="object-contain"
+          quality={100} // ✅ Mantém a qualidade original da imagem
+          unoptimized // ❌ Desativa otimizações automáticas do Next.js
         />
         <span className="font-bold text-xl">Admin Panel</span>
       </div>

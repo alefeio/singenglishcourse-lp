@@ -63,6 +63,8 @@ export default function SignupPage() {
                             width={150}
                             height={70}
                             className="object-contain"
+                            quality={100} // ✅ Mantém a qualidade original da imagem
+                            unoptimized // ❌ Desativa otimizações automáticas do Next.js
                         />
                     </div>
 

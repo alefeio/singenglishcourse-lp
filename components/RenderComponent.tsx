@@ -210,6 +210,8 @@ const RenderComponent: React.FC<RenderComponentProps> = ({
                             }}
                             layout="intrinsic"
                             className="rounded"
+                            quality={100} // ✅ Mantém a qualidade original da imagem
+                            unoptimized // ❌ Desativa otimizações automáticas do Next.js
                         />
                         {/* Inputs para redimensionar a imagem */}
                         <div className="mt-2">

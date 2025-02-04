@@ -333,7 +333,15 @@ export default function LandingPage() {
 
         return (
           <div key={id} style={imageContainerStyles}>
-            <Image src={content} width={100} height={100} alt="Imagem" style={imageStyles} />
+            <Image
+              src={content}
+              width={100}
+              height={100}
+              alt="Imagem"
+              style={imageStyles}
+              quality={100} // ✅ Mantém a qualidade original da imagem
+              unoptimized // ❌ Desativa otimizações automáticas do Next.js
+            />
           </div>
         );
       }

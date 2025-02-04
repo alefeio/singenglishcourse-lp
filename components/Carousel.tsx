@@ -76,6 +76,8 @@ export default function Carousel() {
                                     height={100}
                                     alt={`Banner ${banner.title}`}
                                     className="w-full h-full object-cover object-center"
+                                    quality={100} // ✅ Mantém a qualidade original da imagem
+                                    unoptimized // ❌ Desativa otimizações automáticas do Next.js
                                 />
                                 {/* Sobreposição de conteúdo */}
                                 <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col items-center justify-center text-center p-6">

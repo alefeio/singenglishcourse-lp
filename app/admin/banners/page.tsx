@@ -235,6 +235,8 @@ export default function BannersAdminPage() {
                     width={300}
                     height={150}
                     className="rounded object-cover"
+                    quality={100} // ✅ Mantém a qualidade original da imagem
+                    unoptimized // ❌ Desativa otimizações automáticas do Next.js
                   />
                 )}
                 <h3 className="text-lg font-bold">{banner.title}</h3>

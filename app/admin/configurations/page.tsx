@@ -119,7 +119,15 @@ export default function ConfigurationsPage() {
           <label className="block text-sm font-medium mb-1">Logomarca:</label>
           {logoUrl && (
             <div className="mb-2">
-              <Image src={logoUrl} width={100} height={100} alt="Logomarca" className="w-32 h-auto" />
+              <Image
+                src={logoUrl}
+                width={100}
+                height={100}
+                alt="Logomarca"
+                className="w-32 h-auto"
+                quality={100} // ✅ Mantém a qualidade original da imagem
+                unoptimized // ❌ Desativa otimizações automáticas do Next.js
+              />
             </div>
           )}
           <input

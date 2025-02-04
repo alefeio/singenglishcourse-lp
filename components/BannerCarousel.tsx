@@ -55,6 +55,8 @@ export default function BannerCarousel() {
         width={500}  // Ajuste a largura e a altura de acordo com a sua necessidade
         height={300}
         layout="responsive"
+        quality={100} // ✅ Mantém a qualidade original da imagem
+        unoptimized // ❌ Desativa otimizações automáticas do Next.js
       />
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white bg-black/40 p-4">
         <h2 className="text-3xl font-bold mb-2">{banner.title}</h2>

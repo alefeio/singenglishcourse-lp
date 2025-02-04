@@ -74,6 +74,8 @@ export default function Header() {
               width={120}
               height={40}
               className="object-contain"
+              quality={100} // ✅ Mantém a qualidade original da imagem
+              unoptimized // ❌ Desativa otimizações automáticas do Next.js
             />
           </Link>
         </div>

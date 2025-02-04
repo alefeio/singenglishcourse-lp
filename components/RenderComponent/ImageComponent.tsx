@@ -101,6 +101,8 @@ const ImageComponent: React.FC<ImageComponentProps> = ({
                                 maxWidth: '100%',
                                 borderRadius: component.borderRadius || 0, // Apply border-radius
                             }}
+                            quality={100} // ✅ Mantém a qualidade original da imagem
+                            unoptimized // ❌ Desativa otimizações automáticas do Next.js
                         />
                         {/* Alça de redimensionar a imagem */}
                         <div
